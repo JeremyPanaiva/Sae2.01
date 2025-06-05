@@ -27,6 +27,7 @@ public class GameController implements Initializable {
     private GameView gameView;
     private AnimationTimer gameLoop;
     private Set<KeyCode> pressedKeys;
+    private Set<KeyCode> processedKeys; // Pour éviter la répétition des mouvements
 
     // Contrôles des joueurs
     private static final KeyCode[][] PLAYER_CONTROLS = {
@@ -41,6 +42,7 @@ public class GameController implements Initializable {
         game = new Game(4); // 4 joueurs
         gameView = new GameView(gameCanvas);
         pressedKeys = new HashSet<>();
+        processedKeys = new HashSet<>();
 
         initializeGameLoop();
         setupKeyHandlers();
@@ -73,16 +75,24 @@ public class GameController implements Initializable {
     }
 
     private void onKeyPressed(KeyEvent event) {
-        pressedKeys.add(event.getCode());
+        KeyCode key = event.getCode();
+
+        // Si la touche n'était pas déjà pressée, on l'ajoute aux deux sets
+        if (!pressedKeys.contains(key)) {
+            pressedKeys.add(key);
+            processedKeys.add(key);
+        }
 
         // Redémarrer le jeu avec R
-        if (event.getCode() == KeyCode.R) {
+        if (key == KeyCode.R) {
             game.resetGame();
         }
     }
 
     private void onKeyReleased(KeyEvent event) {
-        pressedKeys.remove(event.getCode());
+        KeyCode key = event.getCode();
+        pressedKeys.remove(key);
+        processedKeys.remove(key);
     }
 
     private void handleInput() {
@@ -92,24 +102,28 @@ public class GameController implements Initializable {
         for (int playerId = 0; playerId < Math.min(game.getPlayers().size(), PLAYER_CONTROLS.length); playerId++) {
             KeyCode[] controls = PLAYER_CONTROLS[playerId];
 
-            // Mouvement
-            if (pressedKeys.contains(controls[0])) { // Haut
+            // Mouvement - seulement si la touche vient d'être pressée
+            if (processedKeys.contains(controls[0])) { // Haut
                 game.movePlayer(playerId, Direction.UP);
+                processedKeys.remove(controls[0]);
             }
-            if (pressedKeys.contains(controls[1])) { // Bas
+            if (processedKeys.contains(controls[1])) { // Bas
                 game.movePlayer(playerId, Direction.DOWN);
+                processedKeys.remove(controls[1]);
             }
-            if (pressedKeys.contains(controls[2])) { // Gauche
+            if (processedKeys.contains(controls[2])) { // Gauche
                 game.movePlayer(playerId, Direction.LEFT);
+                processedKeys.remove(controls[2]);
             }
-            if (pressedKeys.contains(controls[3])) { // Droite
+            if (processedKeys.contains(controls[3])) { // Droite
                 game.movePlayer(playerId, Direction.RIGHT);
+                processedKeys.remove(controls[3]);
             }
 
-            // Bombe
-            if (pressedKeys.contains(controls[4])) {
+            // Bombe - seulement si la touche vient d'être pressée
+            if (processedKeys.contains(controls[4])) {
                 game.placeBomb(playerId);
-                pressedKeys.remove(controls[4]); // Éviter le spam de bombes
+                processedKeys.remove(controls[4]);
             }
         }
     }
