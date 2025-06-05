@@ -78,7 +78,8 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
    - File → Project Structure → Libraries
    - Ajouter JavaFX SDK
 
-3. **Configuration VM Options** :src/
+3. **Configuration VM Options** :
+```bash
 src/
 ├── main/
 │   ├── java/
@@ -117,10 +118,7 @@ src/
 │           ├── destructible_wall.png
 │           └── powerup.png
 
-
-   ```
-   --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml
-   ```
+ ```
 
 4. **Structure des dossiers** :
    - Créer les packages selon l'arborescence fournie
