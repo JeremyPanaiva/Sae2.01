@@ -78,7 +78,7 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
    - File → Project Structure → Libraries
    - Ajouter JavaFX SDK
 
-3. **Configuration VM Options** :
+3. **Arborescence** :
 ```bash
 src/
 ├── main/
@@ -147,44 +147,3 @@ Lancer la classe `BombermanApplication.main()`
 - IA pour joueurs ordinateur
 - Sauvegarde des scores
 - Effets visuels avancés
-
-## Arborecence 
-
-
-src/
-├── main/
-│   ├── java/
-│   │   └── com/
-│   │       └── bomberman/
-│   │           ├── BombermanApplication.java
-│   │           ├── controller/
-│   │           │   └── GameController.java
-│   │           ├── model/
-│   │           │   ├── Game.java
-│   │           │   ├── Player.java
-│   │           │   ├── Bomb.java
-│   │           │   ├── Explosion.java
-│   │           │   ├── Wall.java
-│   │           │   ├── PowerUp.java
-│   │           │   └── GameBoard.java
-│   │           ├── view/
-│   │           │   └── GameView.java
-│   │           └── util/
-│   │               ├── Direction.java
-│   │               ├── GameConstants.java
-│   │               └── Position.java
-│   └── resources/
-│       ├── fxml/
-│       │   └── game.fxml
-│       ├── css/
-│       │   └── game.css
-│       └── images/
-│           ├── player1.png
-│           ├── player2.png
-│           ├── player3.png
-│           ├── player4.png
-│           ├── bomb.png
-│           ├── explosion.png
-│           ├── wall.png
-│           ├── destructible_wall.png
-│           └── powerup.png
