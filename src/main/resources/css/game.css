@@ -28,7 +28,7 @@
 
 /* Styles pour les différents éléments du jeu */
 .player-1 {
-    -fx-fill: #e74c3c; /* Rouge */
+    -fx-image: "player/player1";
 }
 
 .player-2 {
