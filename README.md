@@ -23,24 +23,24 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 ### Contrôles généraux
 - **R** : Redémarrer la partie
 
-## 🎯 Objectif du jeu
+## Objectif du jeu
 
 Éliminez tous les autres joueurs en utilisant vos bombes stratégiquement. Le dernier joueur survivant remporte la partie !
 
-## 🧱 Éléments du jeu
+## Éléments du jeu
 
 - **Murs gris** : Indestructibles
 - **Murs marron** : Destructibles (peuvent cacher des power-ups)
 - **Bombes noires** : Explosent après 3 secondes
 - **Explosions jaunes/orange** : Détruisent les murs et éliminent les joueurs
 
-## 🎁 Power-ups
+## Power-ups
 
 - **B (Orange)** : Bombe supplémentaire
 - **E (Rouge)** : Portée d'explosion augmentée
 - **S (Cyan)** : Vitesse augmentée
 
-## 🏗️ Architecture du projet
+## 🏗Architecture du projet
 
 ### Modèle (Model)
 - `Game.java` : Logique principale du jeu
@@ -64,7 +64,7 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 - `Direction.java` : Énumération des directions
 - `Position.java` : Gestion des positions
 
-## 🚀 Compilation et exécution
+## Compilation et exécution
 
 ### Prérequis
 - Java 11 ou supérieur
@@ -78,7 +78,43 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
    - File → Project Structure → Libraries
    - Ajouter JavaFX SDK
 
-3. **Configuration VM Options** :
+3. **Configuration VM Options** :src/
+├── main/
+│   ├── java/
+│   │   └── com/
+│   │       └── bomberman/
+│   │           ├── BombermanApplication.java
+│   │           ├── controller/
+│   │           │   └── GameController.java
+│   │           ├── model/
+│   │           │   ├── Game.java
+│   │           │   ├── Player.java
+│   │           │   ├── Bomb.java
+│   │           │   ├── Explosion.java
+│   │           │   ├── Wall.java
+│   │           │   ├── PowerUp.java
+│   │           │   └── GameBoard.java
+│   │           ├── view/
+│   │           │   └── GameView.java
+│   │           └── util/
+│   │               ├── Direction.java
+│   │               ├── GameConstants.java
+│   │               └── Position.java
+│   └── resources/
+│       ├── fxml/
+│       │   └── game.fxml
+│       ├── css/
+│       │   └── game.css
+│       └── images/
+│           ├── player1.png
+│           ├── player2.png
+│           ├── player3.png
+│           ├── player4.png
+│           ├── bomb.png
+│           ├── explosion.png
+│           ├── wall.png
+│           ├── destructible_wall.png
+│           └── powerup.png
    ```
    --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml
    ```
@@ -91,18 +127,18 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 ### Exécution
 Lancer la classe `BombermanApplication.main()`
 
-## 🎨 Fonctionnalités
+## Fonctionnalités
 
-- ✅ Multijoueur local (jusqu'à 4 joueurs)
-- ✅ Bombes avec timer et explosions
-- ✅ Murs destructibles avec power-ups
-- ✅ Détection de collision
-- ✅ Système de victoire
-- ✅ Redémarrage de partie
-- ✅ Interface graphique avec animations
-- ✅ Séparation claire MVC
+- Multijoueur local (jusqu'à 4 joueurs)
+- Bombes avec timer et explosions
+- Murs destructibles avec power-ups
+- Détection de collision
+- Système de victoire
+- Redémarrage de partie
+- Interface graphique avec animations
+- Séparation claire MVC
 
-## 🐛 Améliorations possibles
+## Améliorations possibles
 
 - Ajout d'effets sonores
 - Menu principal avec sélection du nombre de joueurs
@@ -110,3 +146,44 @@ Lancer la classe `BombermanApplication.main()`
 - IA pour joueurs ordinateur
 - Sauvegarde des scores
 - Effets visuels avancés
+
+## Arborecence 
+
+
+src/
+├── main/
+│   ├── java/
+│   │   └── com/
+│   │       └── bomberman/
+│   │           ├── BombermanApplication.java
+│   │           ├── controller/
+│   │           │   └── GameController.java
+│   │           ├── model/
+│   │           │   ├── Game.java
+│   │           │   ├── Player.java
+│   │           │   ├── Bomb.java
+│   │           │   ├── Explosion.java
+│   │           │   ├── Wall.java
+│   │           │   ├── PowerUp.java
+│   │           │   └── GameBoard.java
+│   │           ├── view/
+│   │           │   └── GameView.java
+│   │           └── util/
+│   │               ├── Direction.java
+│   │               ├── GameConstants.java
+│   │               └── Position.java
+│   └── resources/
+│       ├── fxml/
+│       │   └── game.fxml
+│       ├── css/
+│       │   └── game.css
+│       └── images/
+│           ├── player1.png
+│           ├── player2.png
+│           ├── player3.png
+│           ├── player4.png
+│           ├── bomb.png
+│           ├── explosion.png
+│           ├── wall.png
+│           ├── destructible_wall.png
+│           └── powerup.png
