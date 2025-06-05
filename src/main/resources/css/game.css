@@ -1,0 +1,96 @@
+/* Styles pour le jeu Bomberman */
+
+.game-container {
+    -fx-background-color: linear-gradient(to bottom, #2c3e50, #34495e);
+    -fx-padding: 20px;
+}
+
+.game-title {
+    -fx-text-fill: #f39c12;
+    -fx-font-weight: bold;
+    -fx-font-size: 28px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 3, 0, 2, 2);
+}
+
+.game-canvas {
+    -fx-border-color: #34495e;
+    -fx-border-width: 3px;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 5, 0, 3, 3);
+}
+
+.status-text {
+    -fx-fill: #ecf0f1;
+    -fx-font-size: 14px;
+    -fx-text-alignment: center;
+    -fx-font-weight: bold;
+}
+
+/* Styles pour les différents éléments du jeu */
+.player-1 {
+    -fx-fill: #e74c3c; /* Rouge */
+}
+
+.player-2 {
+    -fx-fill: #3498db; /* Bleu */
+}
+
+.player-3 {
+    -fx-fill: #2ecc71; /* Vert */
+}
+
+.player-4 {
+    -fx-fill: #f1c40f; /* Jaune */
+}
+
+.bomb {
+    -fx-fill: #2c3e50;
+    -fx-stroke: #34495e;
+    -fx-stroke-width: 2px;
+}
+
+.explosion {
+    -fx-fill: #f39c12;
+    -fx-opacity: 0.8;
+}
+
+.wall-indestructible {
+    -fx-fill: #7f8c8d;
+    -fx-stroke: #2c3e50;
+    -fx-stroke-width: 1px;
+}
+
+.wall-destructible {
+    -fx-fill: #d35400;
+    -fx-stroke: #a0522d;
+    -fx-stroke-width: 1px;
+}
+
+.powerup-bomb {
+    -fx-fill: #e67e22;
+}
+
+.powerup-explosion {
+    -fx-fill: #e74c3c;
+}
+
+.powerup-speed {
+    -fx-fill: #1abc9c;
+}
+
+/* Animations */
+@keyframes blink {
+    0% { -fx-opacity: 1.0; }
+    50% { -fx-opacity: 0.3; }
+    100% { -fx-opacity: 1.0; }
+}
+
+.bomb-blinking {
+    -fx-animation: blink 0.5s infinite;
+}
+
+/* Responsive design */
+.game-container:focused {
+    -fx-border-color: #3498db;
+    -fx-border-width: 2px;
+}

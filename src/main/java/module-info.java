@@ -1,9 +1,9 @@
-module com.example.sae2_01 {
+module bomberman {
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.graphics;
 
+    opens com.bomberman to javafx.fxml;
+    opens com.bomberman.controller to javafx.fxml;
 
-    opens com.example.sae2_01 to javafx.fxml;
-    exports com.example.sae2_01;
+    exports com.bomberman;
 }
