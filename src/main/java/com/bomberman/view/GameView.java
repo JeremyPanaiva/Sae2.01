@@ -96,7 +96,7 @@ public class GameView {
     }
 
     private void drawBackground() {
-        gc.setFill(Color.LIGHTGREEN);
+        gc.setFill(Color.DARKGREEN);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         // Grille
@@ -159,9 +159,6 @@ public class GameView {
                 case BIGGER_EXPLOSION:
                     gc.setFill(Color.RED);
                     break;
-                case SPEED_UP:
-                    gc.setFill(Color.CYAN);
-                    break;
             }
 
             gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
@@ -172,7 +169,6 @@ public class GameView {
             String symbol = switch (powerUp.getType()) {
                 case EXTRA_BOMB -> "B";
                 case BIGGER_EXPLOSION -> "E";
-                case SPEED_UP -> "S";
             };
             gc.fillText(symbol, x + GameConstants.CELL_SIZE/2 - 5, y + GameConstants.CELL_SIZE/2 + 5);
         }

@@ -6,7 +6,6 @@ public class PowerUp {
     public enum Type {
         EXTRA_BOMB,
         BIGGER_EXPLOSION,
-        SPEED_UP
     }
 
     private Position position;
@@ -24,9 +23,6 @@ public class PowerUp {
                 break;
             case BIGGER_EXPLOSION:
                 player.setExplosionRange(player.getExplosionRange() + 1);
-                break;
-            case SPEED_UP:
-                // Implémentation de la vitesse si nécessaire
                 break;
         }
     }

@@ -34,7 +34,7 @@ public class GameController implements Initializable {
             {KeyCode.Z, KeyCode.S, KeyCode.Q, KeyCode.D, KeyCode.A}, // Joueur 1: ZQSD + A pour bombe
             {KeyCode.UP, KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT, KeyCode.ENTER}, // Joueur 2: Flèches + Entrée
             {KeyCode.I, KeyCode.K, KeyCode.J, KeyCode.L, KeyCode.U}, // Joueur 3: IJKL + U
-            {KeyCode.NUMPAD8, KeyCode.NUMPAD2, KeyCode.NUMPAD4, KeyCode.NUMPAD6, KeyCode.NUMPAD0} // Joueur 4: Pavé numérique
+            {KeyCode.NUMPAD8, KeyCode.NUMPAD5, KeyCode.NUMPAD4, KeyCode.NUMPAD6, KeyCode.NUMPAD0} // Joueur 4: Pavé numérique
     };
 
     @Override
