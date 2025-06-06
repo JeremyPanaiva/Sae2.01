@@ -1,0 +1,23 @@
+/* Styles pour le jeu Bomberman */
+
+.game-container {
+    -fx-background-color: #587eb5;
+}
+
+.game-title {
+    -fx-text-fill: #5ea1ff;
+    -fx-font-weight: bold;
+    -fx-font-size: 70px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 3, 0, 2, 2);
+}
+
+.btn {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn:hover {
+    background-color: rgba(255, 255, 255, 0.58);
+}
+
+
+

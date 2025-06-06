@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Font?>
+<?import java.net.URL?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.bomberman.controller.MainMenuController"
+      styleClass="game-container"
+      prefHeight="400.0" prefWidth="600.0" alignment="TOP_CENTER" spacing="80">
+
+    <Label styleClass="game-title" text="BOMBERMAN" />
+
+    <Button text="PLAY" minWidth="200" maxWidth="200" onAction="#handlePlay" styleClass="btn"/>
+    <Button text="TEXTURE PACK" minWidth="200" maxWidth="200" styleClass="btn"/>
+    <Button text="AVATARE" minWidth="200" maxWidth="200" styleClass="btn"/>
+    <Button text="QUIT" minWidth="200" maxWidth="200" onAction="#Quitter" styleClass="btn"/>
+
+</VBox>

@@ -6,9 +6,9 @@
 }
 
 .game-title {
-    -fx-text-fill: #f39c12;
+    -fx-text-fill: #5ea1ff;
     -fx-font-weight: bold;
-    -fx-font-size: 28px;
+    -fx-font-size: 70px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 3, 0, 2, 2);
 }
 

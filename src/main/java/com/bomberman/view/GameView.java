@@ -18,6 +18,10 @@ public class GameView {
     private Image wallImages;
     private Image wallDestructible;
     private Image bomb;
+    private Image explosion_centre;
+    private Image explosion_honrizontal;
+    private Image explosion_vertical;
+    private Image explosion_end;
 
 
     public GameView(Canvas canvas) {
@@ -65,6 +69,7 @@ public class GameView {
             System.err.println("Erreur image bomb");
         }
     }
+
 
 
     public void render(Game game) {
@@ -175,24 +180,26 @@ public class GameView {
     }
 
     private void drawBombs(GameBoard board) {
-        for (Bomb bomb : board.getBombs()) {
-            Position pos = bomb.getPosition();
+        for (Bomb bombs : board.getBombs()) {
+            Position pos = bombs.getPosition();
             int x = pos.getX() * GameConstants.CELL_SIZE;
             int y = pos.getY() * GameConstants.CELL_SIZE;
 
             // Animation de clignotement basée sur le temps restant
-            long timeLeft = bomb.getTimeLeft();
+            long timeLeft = bombs.getTimeLeft();
             boolean blink = (timeLeft < 1000) && (System.currentTimeMillis() / 200) % 2 == 0;
 
             if (!blink) {
-                gc.setFill(Color.BLACK);
-                gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+                if (bomb != null && !bomb.isError() ) {
+                    gc.drawImage(bomb, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+                } else {
+                    gc.setFill(Color.BLACK);
+                    gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
 
-                // Mèche
-                gc.setStroke(Color.ORANGE);
-                gc.setLineWidth(3);
-                gc.strokeLine(x + GameConstants.CELL_SIZE/2, y + 5,
-                        x + GameConstants.CELL_SIZE/2, y);
+                    gc.setStroke(Color.ORANGE);
+                    gc.setLineWidth(3);
+                    gc.strokeLine(x + GameConstants.CELL_SIZE/2, y +5, x + GameConstants.CELL_SIZE/2, y);
+                }
             }
         }
     }
