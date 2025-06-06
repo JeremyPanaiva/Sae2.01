@@ -229,10 +229,6 @@ public class GameView {
                 int x = pos.getX() * GameConstants.CELL_SIZE;
                 int y = pos.getY() * GameConstants.CELL_SIZE;
 
-                // Si l'explosion est sur le point de finir, utiliser l'image END
-                if (explosion.isAboutToFinish()) {
-                    type = Explosion.ExplosionType.END;
-                }
 
                 Image explosionImage = explosionImages.get(type);
 
