@@ -83,7 +83,8 @@ public class Game {
         bomb.getOwner().bombExploded();
 
         List<Position> explosionPositions = calculateExplosionPositions(bomb);
-        board.addExplosion(new Explosion(explosionPositions));
+        // Passer la position centrale de la bombe pour categoriser les explosions
+        board.addExplosion(new Explosion(explosionPositions, bomb.getPosition()));
 
         // Détruire les murs destructibles
         for (Position pos : explosionPositions) {

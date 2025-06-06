@@ -18,7 +18,7 @@ public class GameView {
     private Image wallImages;
     private Image wallDestructible;
     private Image bomb;
-
+    private Map<Explosion.ExplosionType, Image> explosionImages;
 
     public GameView(Canvas canvas) {
         this.canvas = canvas;
@@ -35,6 +35,7 @@ public class GameView {
         loadPlayerImage();
         loadWallImage();
         loadbombImage();
+        loadExplosionImages();
     }
 
     private void loadPlayerImage() {
@@ -66,6 +67,21 @@ public class GameView {
         }
     }
 
+    private void loadExplosionImages() {
+        explosionImages = new HashMap<>();
+        try {
+            explosionImages.put(Explosion.ExplosionType.CENTER,
+                    new Image(getClass().getResourceAsStream("/image/explosion_centre.png")));
+            explosionImages.put(Explosion.ExplosionType.VERTICAL,
+                    new Image(getClass().getResourceAsStream("/image/explosion_horizontal.png")));
+            explosionImages.put(Explosion.ExplosionType.HORIZONTAL,
+                    new Image(getClass().getResourceAsStream("/image/explosion_vertical.png")));
+            explosionImages.put(Explosion.ExplosionType.END,
+                    new Image(getClass().getResourceAsStream("/image/explosion_end.png")));
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des images d'explosion: " + e.getMessage());
+        }
+    }
 
     public void render(Game game) {
         clearCanvas();
@@ -185,29 +201,66 @@ public class GameView {
             boolean blink = (timeLeft < 1000) && (System.currentTimeMillis() / 200) % 2 == 0;
 
             if (!blink) {
-                gc.setFill(Color.BLACK);
-                gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+                if (this.bomb != null && !this.bomb.isError()) {
+                    gc.drawImage(this.bomb, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+                } else {
+                    // Fallback
+                    gc.setFill(Color.BLACK);
+                    gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
 
-                // Mèche
-                gc.setStroke(Color.ORANGE);
-                gc.setLineWidth(3);
-                gc.strokeLine(x + GameConstants.CELL_SIZE/2, y + 5,
-                        x + GameConstants.CELL_SIZE/2, y);
+                    // Mèche
+                    gc.setStroke(Color.ORANGE);
+                    gc.setLineWidth(3);
+                    gc.strokeLine(x + GameConstants.CELL_SIZE/2, y + 5,
+                            x + GameConstants.CELL_SIZE/2, y);
+                }
             }
         }
     }
 
     private void drawExplosions(GameBoard board) {
         for (Explosion explosion : board.getExplosions()) {
-            gc.setFill(Color.YELLOW);
-            for (Position pos : explosion.getPositions()) {
+            Map<Position, Explosion.ExplosionType> explosionTypes = explosion.getAllExplosionTypes();
+
+            for (Map.Entry<Position, Explosion.ExplosionType> entry : explosionTypes.entrySet()) {
+                Position pos = entry.getKey();
+                Explosion.ExplosionType type = entry.getValue();
+
                 int x = pos.getX() * GameConstants.CELL_SIZE;
                 int y = pos.getY() * GameConstants.CELL_SIZE;
-                gc.fillRect(x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
 
-                // Effet de flamme
-                gc.setFill(Color.ORANGE);
-                gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+                // Si l'explosion est sur le point de finir, utiliser l'image END
+                if (explosion.isAboutToFinish()) {
+                    type = Explosion.ExplosionType.END;
+                }
+
+                Image explosionImage = explosionImages.get(type);
+
+                if (explosionImage != null && !explosionImage.isError()) {
+                    gc.drawImage(explosionImage, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+                } else {
+                    // Fallback avec couleurs différentes selon le type
+                    switch (type) {
+                        case CENTER:
+                            gc.setFill(Color.WHITE);
+                            break;
+                        case HORIZONTAL:
+                            gc.setFill(Color.YELLOW);
+                            break;
+                        case VERTICAL:
+                            gc.setFill(Color.ORANGE);
+                            break;
+                        case END:
+                            gc.setFill(Color.RED);
+                            break;
+                    }
+
+                    gc.fillRect(x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+
+                    // Effet de flamme au centre
+                    gc.setFill(Color.ORANGE);
+                    gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+                }
             }
         }
     }
@@ -228,7 +281,6 @@ public class GameView {
                 gc.setFill(Color.web(player.getColor()));
                 gc.fillRect(x+3, y+3, GameConstants.CELL_SIZE-6 , GameConstants.CELL_SIZE-6);
             }
-
 
             // Numéro du joueur
             gc.setFill(Color.WHITE);
