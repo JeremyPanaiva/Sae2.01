@@ -17,7 +17,7 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 - **Bombe** : U
 
 ### Joueur 4 (Jaune)
-- **Mouvement** : Pavé numérique (8, 2, 4, 6)
+- **Mouvement** : Pavé numérique (8, 5, 4, 6)
 - **Bombe** : 0 (pavé numérique)
 
 ### Contrôles généraux
@@ -38,7 +38,7 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 
 - **B (Orange)** : Bombe supplémentaire
 - **E (Rouge)** : Portée d'explosion augmentée
-- **S (Cyan)** : Vitesse augmentée
+
 
 ## 🏗Architecture du projet
 
