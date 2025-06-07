@@ -1,6 +1,16 @@
 package com.bomberman.model;
 
 import com.bomberman.util.*;
+import javafx.animation.PauseTransition;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import java.io.IOException;
 import java.util.*;
 
 public class Game {
@@ -8,12 +18,14 @@ public class Game {
     private List<Player> players;
     private boolean gameRunning;
     private Player winner;
+    private Stage primaryStage;
 
     public Game(int numPlayers) {
         board = new GameBoard();
         players = new ArrayList<>();
         gameRunning = true;
         winner = null;
+
 
         initializePlayers(numPlayers);
     }
@@ -29,6 +41,11 @@ public class Game {
         for (int i = 0; i < Math.min(numPlayers, GameConstants.MAX_PLAYERS); i++) {
             players.add(new Player(i, startPositions[i], GameConstants.PLAYER_COLORS[i]));
         }
+    }
+
+    public Game(int numPlayers, Stage stage) {
+        this(numPlayers);
+        this.primaryStage = stage;
     }
 
     public void movePlayer(int playerId, Direction direction) {
@@ -151,6 +168,25 @@ public class Game {
         }
     }
 
+    private void returnToMainMenu() {
+        if (primaryStage != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
+                Parent root = loader.load();
+                Scene scene = new Scene(root, 800, 600);
+                scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
+
+                primaryStage.setScene(scene);
+                primaryStage.setResizable(false);
+
+                // Focus sur la scene pour les événements clavier
+                scene.getRoot().requestFocus();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void resetGame() {
         board = new GameBoard();
         gameRunning = true;
@@ -174,4 +210,8 @@ public class Game {
     public List<Player> getPlayers() { return new ArrayList<>(players); }
     public boolean isGameRunning() { return gameRunning; }
     public Player getWinner() { return winner; }
+    public void setPrimaryStage(Stage stage) { this.primaryStage = stage; }
+
+
 }
+

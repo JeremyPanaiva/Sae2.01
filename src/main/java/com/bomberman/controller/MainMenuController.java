@@ -15,7 +15,9 @@ public class MainMenuController {
     @FXML
     private Button Quit;
     @FXML
-    private Button Help;
+    private Button Play;
+    @FXML
+    private Button Avatar;
 
     @FXML
     private void Quitter (ActionEvent event) {
@@ -30,6 +32,26 @@ public class MainMenuController {
             Parent root = loader.load();
             Scene scene = new Scene(root, 800, 600);
             scene.getStylesheets().add(getClass().getResource("/css/game.css").toExternalForm());
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.show();
+
+            // Focus sur la scene pour les événements clavier
+            scene.getRoot().requestFocus();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleAvatar(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Avatar.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 800, 600);
+            scene.getStylesheets().add(getClass().getResource("/css/Avatar.css").toExternalForm());
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);

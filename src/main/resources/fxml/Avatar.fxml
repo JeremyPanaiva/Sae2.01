@@ -6,9 +6,24 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.text.Text?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="fxml.Avatar"
+            fx:controller="com.bomberman.controller.AvatarController"
             prefHeight="400.0" prefWidth="600.0">
+
+    <HBox>
+        <Button text="close" onAction="#closeButtonAction"/>
+        <VBox>
+            <TextField fx:id="speudo1" promptText="Pseudo du Personnage 1"/>
+            <Button text="Enregistrer les Pseudos" onAction="#savePseudos"/>
+            <Label text="nombre match : "/>
+            <Label fx:id="nbMatch"/>
+            <Label text="nombre match gagner"/>
+            <Label fx:id="nbMatchGagner"/>
+        </VBox>
+
+    </HBox>
 
 </AnchorPane>

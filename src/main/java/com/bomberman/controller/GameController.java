@@ -5,13 +5,18 @@ import com.bomberman.util.Direction;
 import com.bomberman.view.GameView;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.ResourceBundle;
@@ -48,6 +53,7 @@ public class GameController implements Initializable {
         setupKeyHandlers();
 
         root.requestFocus();
+
     }
 
     private void initializeGameLoop() {
@@ -86,6 +92,10 @@ public class GameController implements Initializable {
         // Redémarrer le jeu avec R
         if (key == KeyCode.R) {
             game.resetGame();
+        }
+
+        if (key == KeyCode.ESCAPE) {
+            returnToMainMenu();
         }
     }
 
@@ -138,6 +148,28 @@ public class GameController implements Initializable {
         } else {
             long alivePlayers = game.getPlayers().stream().filter(p -> p.isAlive()).count();
             statusText.setText("Joueurs en vie: " + alivePlayers + " | Contrôles: J1(ZQSD+A) J2(Flèches+Entrée) J3(IJKL+U) J4(Pavé+0)");
+        }
+    }
+
+    private void returnToMainMenu() {
+        if (gameLoop != null) {
+            gameLoop.stop(); // Arrêter la boucle de jeu
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
+            Parent rootParent = loader.load();
+            Scene scene = new Scene(rootParent, 800, 600);
+            scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
+
+            Stage stage = (Stage) root.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setResizable(false);
+
+            // Focus sur la scene pour les événements clavier
+            scene.getRoot().requestFocus();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

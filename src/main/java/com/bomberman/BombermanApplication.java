@@ -9,9 +9,9 @@ public class BombermanApplication extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Avatar.fxml"));
         Scene scene = new Scene(loader.load(), 800, 600);
-        scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/css/Avatar.css").toExternalForm());
 
         stage.setTitle("Bomberman");
         stage.setScene(scene);

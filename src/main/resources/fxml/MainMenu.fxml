@@ -18,7 +18,7 @@
 
     <Button text="PLAY" minWidth="200" maxWidth="200" onAction="#handlePlay" styleClass="btn"/>
     <Button text="TEXTURE PACK" minWidth="200" maxWidth="200" styleClass="btn"/>
-    <Button text="AVATARE" minWidth="200" maxWidth="200" styleClass="btn"/>
+    <Button text="AVATARE" minWidth="200" maxWidth="200" styleClass="btn" onAction="#handleAvatar"/>
     <Button text="QUIT" minWidth="200" maxWidth="200" onAction="#Quitter" styleClass="btn"/>
 
 </VBox>
