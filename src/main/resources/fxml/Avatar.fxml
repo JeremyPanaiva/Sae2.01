@@ -1,29 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.text.Text?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.bomberman.controller.AvatarController"
-            prefHeight="400.0" prefWidth="600.0">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" styleClass="game-container" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bomberman.controller.AvatarController">
 
-    <HBox>
-        <Button text="close" onAction="#closeButtonAction"/>
-        <VBox>
-            <TextField fx:id="speudo1" promptText="Pseudo du Personnage 1"/>
-            <Button text="Enregistrer les Pseudos" onAction="#savePseudos"/>
-            <Label text="nombre match : "/>
-            <Label fx:id="nbMatch"/>
-            <Label text="nombre match gagner"/>
-            <Label fx:id="nbMatchGagner"/>
-        </VBox>
+    <VBox>
+        <HBox>
+            <HBox styleClass="btn-container">
+            <Button onAction="#closeButtonAction" styleClass="Close" text="close">
+                <cursor>
+                    <Cursor fx:constant="HAND" />
+                </cursor></Button>
+            </HBox>
 
-    </HBox>
+
+            <VBox styleClass="Avatar-container1">
+                <HBox styleClass="image-container">
+                    <ImageView fx:id="avatarImageView" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
+                        <Image url="@../image/background.png" />
+                    </ImageView>
+                    <Button fx:id="choisirImage" onAction="#changerImage" styleClass="sauvegardeImage" />
+                </HBox>
+                <HBox styleClass="speudo-container">
+                    <TextField fx:id="speudo1" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 1" styleClass="speudo" />
+                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos" />
+                </HBox>
+                <Label fx:id="nbMatch" />
+                <Label fx:id="nbMatchGagner" />
+            </VBox>
+        </HBox>
+    </VBox>
 
 </AnchorPane>

@@ -28,6 +28,7 @@ public class Game {
 
 
         initializePlayers(numPlayers);
+        com.bomberman.controller.AvatarController.incrementTotalMatch();
     }
 
     private void initializePlayers(int numPlayers) {
@@ -41,6 +42,9 @@ public class Game {
         for (int i = 0; i < Math.min(numPlayers, GameConstants.MAX_PLAYERS); i++) {
             players.add(new Player(i, startPositions[i], GameConstants.PLAYER_COLORS[i]));
         }
+
+        //compteur nb match total
+
     }
 
     public Game(int numPlayers, Stage stage) {
@@ -164,6 +168,7 @@ public class Game {
             gameRunning = false;
             if (alivePlayers.size() == 1) {
                 winner = alivePlayers.get(0);
+                com.bomberman.controller.AvatarController.incrementNbMatchGagner(winner.getId());
             }
         }
     }
