@@ -5,6 +5,19 @@
     -fx-background-repeat: no-repeat;
 }
 
+.Close{
+    -fx-background-image: url("../image/close.png");
+    -fx-pref-width: 48;
+    -fx-pref-height: 48;
+    -fx-background-color: rgba(255, 255, 255, 0);
+
+}
+
+.Avatar{
+    -fx-spacing: 15;
+    -fx-padding: 20;
+}
+
 .btn-container{
     -fx-alignment: right;
 }

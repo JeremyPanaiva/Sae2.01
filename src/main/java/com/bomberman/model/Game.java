@@ -1,5 +1,6 @@
 package com.bomberman.model;
 
+import com.bomberman.controller.AvatarController;
 import com.bomberman.util.*;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
@@ -28,7 +29,10 @@ public class Game {
 
 
         initializePlayers(numPlayers);
-        com.bomberman.controller.AvatarController.incrementTotalMatch();
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY3);
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY4);
     }
 
     private void initializePlayers(int numPlayers) {
