@@ -12,6 +12,9 @@
     -fx-background-color: rgba(255, 255, 255, 0);
 
 }
+.Close:hover{
+    -fx-background-color:rgba(255, 255, 255, 0.44) ;
+}
 
 .Avatar{
     -fx-spacing: 15;
@@ -38,7 +41,7 @@
     -fx-background-image: url("../image/dossier.png");
     -fx-pref-width: 24;
     -fx-pref-height: 24;
-    -fx-background-color: rgba(255, 255, 255, 0);
+    -fx-background-color: rgba(112, 69, 29, 0);
 }
 
 .sauvegardeImage:hover{
