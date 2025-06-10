@@ -7,12 +7,26 @@ import java.util.*;
 public class BotPlayer extends Player {
     private Random random;
     private long lastActionTime;
-    private static final long ACTION_DELAY = 150;
+    private static final long ACTION_DELAY = 120;
+
+    // États du bot
+    private enum BotState {
+        AGGRESSIVE,     // Chasser les joueurs
+        DEFENSIVE,      // Se protéger et collecter power-ups
+        WALL_BREAKING,  // Détruire des murs pour les power-ups
+        CORNER_TRAP     // Piéger un joueur dans un coin
+    }
+
+    private BotState currentState;
+    private Position lastTargetPosition;
+    private int consecutiveFailedAttacks;
 
     public BotPlayer(int id, Position position, String color) {
         super(id, position, color);
         this.random = new Random();
         this.lastActionTime = 0;
+        this.currentState = BotState.WALL_BREAKING;
+        this.consecutiveFailedAttacks = 0;
     }
 
     public void makeMove(GameBoard board, List<Player> allPlayers) {
@@ -24,230 +38,309 @@ public class BotPlayer extends Player {
 
         Position myPos = getPosition();
 
-        // PRIORITÉ 1 : Fuir si on est en danger
-        if (isInDanger(board, myPos)) {
-            Direction escapeDir = findEscapeDirection(board, myPos);
+        // PRIORITÉ ABSOLUE : Survivre aux explosions
+        if (isInImmediateDanger(board, myPos)) {
+            Direction escapeDir = findBestEscapeRoute(board, myPos);
             if (escapeDir != null) {
                 move(escapeDir, board);
+                return;
             }
-            return;
         }
 
-        // PRIORITÉ 2 : Poser une bombe aléatoirement (et intelligemment)
-        if (canPlaceBomb() && wantsToPlaceBombRandomly(board, myPos)) {
-            // Le GameController doit gérer la pose réelle de la bombe
-            return;
-        }
+        // Adapter la stratégie selon la situation
+        adaptStrategy(board, allPlayers);
 
-        // PRIORITÉ 3 : Mouvement aléatoire ou vers un objectif
-        Direction moveDir = chooseMovementDirection(board, allPlayers, myPos);
-        if (moveDir != null) {
-            move(moveDir, board);
+        // Exécuter l'action selon l'état actuel
+        executeStrategy(board, allPlayers, myPos);
+    }
+
+    private void adaptStrategy(GameBoard board, List<Player> allPlayers) {
+        int aliveEnemies = countAliveEnemies(allPlayers);
+        int myBombs = getBombCount();
+
+        // Stratégie agressive si peu d'ennemis ou si on a l'avantage
+        if (aliveEnemies <= 2 && myBombs >= 1) { // Réduit le seuil de bombes
+            currentState = BotState.AGGRESSIVE;
+        }
+        // Piéger si on peut acculer quelqu'un
+        else if (canTrapEnemy(board, allPlayers)) {
+            currentState = BotState.CORNER_TRAP;
+        }
+        // Sinon casser des murs pour les power-ups
+        else {
+            currentState = BotState.WALL_BREAKING;
         }
     }
 
-    private boolean wantsToPlaceBombRandomly(GameBoard board, Position myPos) {
-        // 10% de chance de poser une bombe, uniquement si on peut s’échapper ensuite
-        if (random.nextDouble() < 0.1) {
-            return canEscapeAfterBomb(board, myPos);
+    private void executeStrategy(GameState board, List<Player> allPlayers, Position myPos) {
+        switch (currentState) {
+            case AGGRESSIVE:
+                executeAggressiveStrategy(board, allPlayers, myPos);
+                break;
+            case DEFENSIVE:
+                executeDefensiveStrategy(board, allPlayers, myPos);
+                break;
+            case WALL_BREAKING:
+                executeWallBreakingStrategy(board, myPos);
+                break;
+            case CORNER_TRAP:
+                executeCornerTrapStrategy(board, allPlayers, myPos);
+                break;
         }
-        return false;
     }
 
+    private void executeAggressiveStrategy(GameBoard board, List<Player> allPlayers, Position myPos) {
+        Player target = findBestTarget(allPlayers, myPos);
 
-    // Vérifie si on est en danger immédiat
-    private boolean isInDanger(GameBoard board, Position pos) {
-        // Vérifier les explosions actuelles
+        if (target != null) {
+            Position targetPos = target.getPosition();
+
+            // Si le joueur est dans notre ligne de mire et à bonne distance
+            if (canKillPlayerSafely(board, myPos, targetPos)) {
+                // Le GameController gérera la pose de bombe via wantsToPlaceBomb()
+                return;
+            }
+
+            // Sinon se rapprocher du joueur en anticipant ses mouvements
+            Direction huntDir = calculateHuntingDirection(board, myPos, targetPos, target);
+            if (huntDir != null && isSafeMove(board, myPos.getNeighbor(huntDir))) {
+                move(huntDir, board);
+                lastTargetPosition = targetPos;
+            } else {
+                consecutiveFailedAttacks++;
+                // Si on n'arrive pas à atteindre, changer de stratégie
+                if (consecutiveFailedAttacks > 5) {
+                    currentState = BotState.WALL_BREAKING;
+                    consecutiveFailedAttacks = 0;
+                }
+            }
+        }
+    }
+
+    private void executeDefensiveStrategy(GameBoard board, List<Player> allPlayers, Position myPos) {
+        // Chercher les power-ups ou les zones sûres
+        Position powerUp = findNearestPowerUp(board, myPos);
+        Position safeZone = findSafestPosition(board, allPlayers, myPos);
+
+        Position target = (powerUp != null) ? powerUp : safeZone;
+
+        if (target != null) {
+            Direction dir = getSmartDirectionTowards(board, myPos, target);
+            if (dir != null && isSafeMove(board, myPos.getNeighbor(dir))) {
+                move(dir, board);
+            }
+        }
+    }
+
+    private void executeWallBreakingStrategy(GameBoard board, Position myPos) {
+        // Chercher le meilleur endroit pour casser des murs
+        Position bestWallCluster = findBestWallCluster(board, myPos);
+
+        if (bestWallCluster != null) {
+            if (manhattanDistance(myPos, bestWallCluster) <= 1) {
+                // On est à côté du cluster, on peut poser une bombe
+                return; // wantsToPlaceBomb() gérera la logique
+            } else {
+                // Se diriger vers le cluster
+                Direction dir = getSmartDirectionTowards(board, myPos, bestWallCluster);
+                if (dir != null && isSafeMove(board, myPos.getNeighbor(dir))) {
+                    move(dir, board);
+                }
+            }
+        }
+    }
+
+    private void executeCornerTrapStrategy(GameBoard board, List<Player> allPlayers, Position myPos) {
+        Player victim = findTrappablePlayer(board, allPlayers, myPos);
+
+        if (victim != null) {
+            Position trapPos = calculateTrapPosition(board, victim.getPosition());
+            if (trapPos != null) {
+                Direction dir = getSmartDirectionTowards(board, myPos, trapPos);
+                if (dir != null && isSafeMove(board, myPos.getNeighbor(dir))) {
+                    move(dir, board);
+                }
+            }
+        }
+    }
+
+    // Méthodes de détection et d'analyse
+
+    private boolean isInImmediateDanger(GameBoard board, Position pos) {
+        // Explosions actuelles
         for (Explosion explosion : board.getExplosions()) {
-            if (explosion.getPositions().contains(pos)) {
+            if (explosion.getPositions().contains(pos)) return true;
+        }
+
+        // Bombes sur le point d'exploser
+        for (Bomb bomb : board.getBombs()) {
+            if (bomb.getTimeLeft() <= 1500 && isInBombBlastZone(pos, bomb, board)) {
                 return true;
             }
         }
 
-        // Vérifier les bombes dangereuses
-        for (Bomb bomb : board.getBombs()) {
-            if (bomb.getTimeLeft() <= 2000) { // Moins de 2 secondes
-                if (isInBombRange(pos, bomb)) {
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
 
+    private Direction findBestEscapeRoute(GameBoard board, Position pos) {
+        Map<Direction, Integer> escapeScores = new HashMap<>();
 
-    // Trouve une direction pour échapper au danger
-    private Direction findEscapeDirection(GameBoard board, Position pos) {
-        List<Direction> safeDirs = new ArrayList<>();
-
-        for (Direction dir : Direction.values()) {
-            Position newPos = pos.getNeighbor(dir);
-            if (board.canMoveTo(newPos) && !isInDanger(board, newPos)) {
-                safeDirs.add(dir);
-            }
-        }
-
-        if (!safeDirs.isEmpty()) {
-            return safeDirs.get(random.nextInt(safeDirs.size()));
-        }
-
-        // Si aucune direction sûre, essayer n'importe où
         for (Direction dir : Direction.values()) {
             Position newPos = pos.getNeighbor(dir);
             if (board.canMoveTo(newPos)) {
-                return dir;
+                int score = calculateEscapeScore(board, newPos);
+                escapeScores.put(dir, score);
             }
         }
 
-        return null;
+        return escapeScores.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 
-    // Trouve le joueur le plus proche
-    private Player findNearestPlayer(List<Player> allPlayers, Position myPos) {
-        Player nearest = null;
-        int minDistance = Integer.MAX_VALUE;
+    private int calculateEscapeScore(GameBoard board, Position pos) {
+        int score = 100;
+
+        // Pénalité pour chaque danger proche
+        for (Bomb bomb : board.getBombs()) {
+            if (isInBombBlastZone(pos, bomb, board)) {
+                score -= (3000 - bomb.getTimeLeft()) / 10; // Plus c'est proche, plus c'est dangereux
+            }
+        }
+
+        // Bonus pour les espaces ouverts (plus de liberté de mouvement)
+        int openSpaces = 0;
+        for (Direction dir : Direction.values()) {
+            if (board.canMoveTo(pos.getNeighbor(dir))) {
+                openSpaces++;
+            }
+        }
+        score += openSpaces * 20;
+
+        return score;
+    }
+
+    private Player findBestTarget(List<Player> allPlayers, Position myPos) {
+        Player bestTarget = null;
+        int bestScore = -1;
 
         for (Player player : allPlayers) {
             if (player != this && player.isAlive()) {
-                int distance = manhattanDistance(myPos, player.getPosition());
-                if (distance < minDistance && distance <= 4) { // Seulement si proche
-                    minDistance = distance;
-                    nearest = player;
+                int score = calculateTargetScore(player, myPos);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestTarget = player;
                 }
             }
         }
 
-        return nearest;
+        return bestTarget;
     }
 
-    // Vérifie si on peut tuer un joueur avec une bombe
-    private boolean canKillPlayer(GameBoard board, Position myPos, Position playerPos) {
-        if (!canPlaceBomb()) return false;
-
-        // Vérifier si le joueur est dans la ligne d'explosion
-        if (!isInExplosionLine(myPos, playerPos)) return false;
-
-        // Vérifier la distance
+    private int calculateTargetScore(Player player, Position myPos) {
+        Position playerPos = player.getPosition();
         int distance = manhattanDistance(myPos, playerPos);
-        if (distance > getExplosionRange()) return false;
 
-        // Vérifier qu'il n'y a pas de mur entre nous
-        if (hasWallBetween(board, myPos, playerPos)) return false;
+        int score = 100;
+        score -= distance * 5; // Préférer les joueurs proches
 
-        // Vérifier qu'on peut s'échapper après avoir posé la bombe
-        return canEscapeAfterBomb(board, myPos);
+        // Bonus si le joueur est dans une ligne droite
+        if (isInStraightLine(myPos, playerPos)) {
+            score += 30;
+        }
+
+        // Bonus si le joueur semble coincé
+        if (isPlayerTrapped(player, myPos)) {
+            score += 50;
+        }
+
+        return Math.max(0, score);
     }
 
-    // Vérifie si on devrait casser des murs
-    private boolean shouldBreakWalls(GameBoard board, Position pos) {
+    private boolean canKillPlayerSafely(GameBoard board, Position myPos, Position targetPos) {
         if (!canPlaceBomb()) return false;
+        if (!isInStraightLine(myPos, targetPos)) return false;
+        if (manhattanDistance(myPos, targetPos) > getExplosionRange()) return false;
+        if (hasObstacleBetween(board, myPos, targetPos)) return false;
 
-        // Compter les murs destructibles à portée
-        int wallCount = 0;
-        for (Direction dir : Direction.values()) {
-            Position checkPos = pos.getNeighbor(dir);
-            if (board.hasDestructibleWall(checkPos)) {
-                wallCount++;
-            }
-        }
-
-        // Poser une bombe si on peut casser au moins 1 mur et qu'on peut s'échapper
-        return wallCount > 0 && canEscapeAfterBomb(board, pos);
+        return canEscapeAfterBombAt(board, myPos);
     }
 
-    // Choisit la direction de mouvement
-    private Direction chooseMovementDirection(GameBoard board, List<Player> allPlayers, Position myPos) {
-        List<Direction> validDirs = new ArrayList<>();
+    private Direction calculateHuntingDirection(GameBoard board, Position myPos, Position targetPos, Player target) {
+        // Prédire où le joueur va aller
+        Position predictedPos = predictPlayerMovement(board, target);
 
-        // Trouver toutes les directions valides et sûres
+        // Se diriger vers la position prédite
+        return getSmartDirectionTowards(board, myPos, predictedPos != null ? predictedPos : targetPos);
+    }
+
+    private Position predictPlayerMovement(GameBoard board, Player player) {
+        // Logique simple de prédiction basée sur les mouvements précédents
+        Position currentPos = player.getPosition();
+
+        // Vérifier dans quelle direction le joueur a le plus d'espace libre
+        Direction bestDir = null;
+        int maxFreeSpace = 0;
+
         for (Direction dir : Direction.values()) {
-            Position newPos = myPos.getNeighbor(dir);
-            if (board.canMoveTo(newPos) && !isInDanger(board, newPos)) {
-                validDirs.add(dir);
-            }
-        }
-
-        if (validDirs.isEmpty()) {
-            // Si aucune direction sûre, essayer n'importe où
-            for (Direction dir : Direction.values()) {
-                Position newPos = myPos.getNeighbor(dir);
-                if (board.canMoveTo(newPos)) {
-                    validDirs.add(dir);
+            Position nextPos = currentPos.getNeighbor(dir);
+            if (board.canMoveTo(nextPos)) {
+                int freeSpace = countFreeSpacesInDirection(board, nextPos, dir);
+                if (freeSpace > maxFreeSpace) {
+                    maxFreeSpace = freeSpace;
+                    bestDir = dir;
                 }
             }
         }
 
-        if (validDirs.isEmpty()) return null ;
-
-        // Préférer se diriger vers un joueur ou des murs destructibles
-        Player target = findNearestPlayer(allPlayers, myPos);
-        if (target != null) {
-            Direction towardsPlayer = getDirectionTowards(myPos, target.getPosition());
-            if (validDirs.contains(towardsPlayer)) {
-                return towardsPlayer;
-            }
-        }
-
-        // Sinon, se diriger vers des murs destructibles
-        Position nearestWall = findNearestWall(board, myPos);
-        if (nearestWall != null) {
-            Direction towardsWall = getDirectionTowards(myPos, nearestWall);
-            if (validDirs.contains(towardsWall)) {
-                return towardsWall;
-            }
-        }
-
-        // Mouvement aléatoire
-        return validDirs.get(random.nextInt(validDirs.size()));
+        return bestDir != null ? currentPos.getNeighbor(bestDir) : null;
     }
 
     // Méthodes utilitaires
 
-    private boolean isInBombRange(Position pos, Bomb bomb) {
+    private boolean isInBombBlastZone(Position pos, Bomb bomb, GameBoard board) {
         Position bombPos = bomb.getPosition();
-
-        // Même position
         if (pos.equals(bombPos)) return true;
 
-        // Vérifier les 4 directions
         for (Direction dir : Direction.values()) {
             for (int i = 1; i <= bomb.getExplosionRange(); i++) {
-                Position explodePos = new Position(
+                Position checkPos = new Position(
                         bombPos.getX() + dir.getDeltaX() * i,
                         bombPos.getY() + dir.getDeltaY() * i
                 );
 
-                if (explodePos.equals(pos)) return true;
-
-                // Arrêter si on rencontre un mur
-                if (hasWallAt(explodePos)) break;
+                if (checkPos.equals(pos)) return true;
+                if (board.hasWall(checkPos) || board.hasDestructibleWall(checkPos)) break;
             }
         }
-
         return false;
     }
 
-    private boolean isInExplosionLine(Position pos1, Position pos2) {
+    private boolean isSafeMove(GameBoard board, Position pos) {
+        return board.canMoveTo(pos) && !isInImmediateDanger(board, pos);
+    }
+
+    private boolean isInStraightLine(Position pos1, Position pos2) {
         return pos1.getX() == pos2.getX() || pos1.getY() == pos2.getY();
     }
 
-    private boolean hasWallBetween(GameBoard board, Position from, Position to) {
+    private boolean hasObstacleBetween(GameBoard board, Position from, Position to) {
         if (from.getX() == to.getX()) {
-            // Ligne verticale
             int minY = Math.min(from.getY(), to.getY());
             int maxY = Math.max(from.getY(), to.getY());
             for (int y = minY + 1; y < maxY; y++) {
-                if (board.hasWall(new Position(from.getX(), y))) {
+                Position checkPos = new Position(from.getX(), y);
+                if (board.hasWall(checkPos) || board.hasDestructibleWall(checkPos)) {
                     return true;
                 }
             }
         } else if (from.getY() == to.getY()) {
-            // Ligne horizontale
             int minX = Math.min(from.getX(), to.getX());
             int maxX = Math.max(from.getX(), to.getX());
             for (int x = minX + 1; x < maxX; x++) {
-                if (board.hasWall(new Position(x, from.getY()))) {
+                Position checkPos = new Position(x, from.getY());
+                if (board.hasWall(checkPos) || board.hasDestructibleWall(checkPos)) {
                     return true;
                 }
             }
@@ -255,81 +348,260 @@ public class BotPlayer extends Player {
         return false;
     }
 
-    private boolean canEscapeAfterBomb(GameBoard board, Position bombPos) {
-        // Vérifier s'il y a au moins une direction où on peut aller et être en sécurité
+    private boolean canEscapeAfterBombAt(GameBoard board, Position bombPos) {
         for (Direction dir : Direction.values()) {
             Position escapePos = bombPos.getNeighbor(dir);
-            if (board.canMoveTo(escapePos)) {
-                // Vérifier si cette position sera sûre après l'explosion
-                boolean safe = true;
-                for (int i = 1; i <= getExplosionRange(); i++) {
-                    Position explodePos = new Position(
-                            bombPos.getX() + dir.getDeltaX() * i,
-                            bombPos.getY() + dir.getDeltaY() * i
-                    );
-                    if (explodePos.equals(escapePos)) {
-                        safe = false;
-                        break;
-                    }
-                    if (hasWallAt(explodePos)) break;
-                }
-                if (safe) return true;
+            if (board.canMoveTo(escapePos) && !wouldBeInBlastZone(escapePos, bombPos)) {
+                return true;
             }
         }
         return false;
     }
 
-    private Position findNearestWall(GameBoard board, Position myPos) {
-        Position nearest = null;
-        int minDistance = Integer.MAX_VALUE;
+    private boolean wouldBeInBlastZone(Position pos, Position bombPos) {
+        if (pos.equals(bombPos)) return true;
 
-        for (int x = 0; x < com.bomberman.util.GameConstants.BOARD_WIDTH; x++) {
-            for (int y = 0; y < com.bomberman.util.GameConstants.BOARD_HEIGHT; y++) {
-                Position wallPos = new Position(x, y);
-                if (board.hasDestructibleWall(wallPos)) {
-                    int distance = manhattanDistance(myPos, wallPos);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        nearest = wallPos;
-                    }
-                }
+        for (Direction dir : Direction.values()) {
+            for (int i = 1; i <= getExplosionRange(); i++) {
+                Position blastPos = new Position(
+                        bombPos.getX() + dir.getDeltaX() * i,
+                        bombPos.getY() + dir.getDeltaY() * i
+                );
+                if (blastPos.equals(pos)) return true;
             }
         }
-
-        return nearest;
+        return false;
     }
 
-    private Direction getDirectionTowards(Position from, Position to) {
+    private Direction getSmartDirectionTowards(GameBoard board, Position from, Position to) {
         int deltaX = to.getX() - from.getX();
         int deltaY = to.getY() - from.getY();
 
+        // Essayer d'abord la direction principale
+        Direction primaryDir = null;
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            return deltaX > 0 ? Direction.RIGHT : Direction.LEFT;
+            primaryDir = deltaX > 0 ? Direction.RIGHT : Direction.LEFT;
         } else {
-            return deltaY > 0 ? Direction.DOWN : Direction.UP;
+            primaryDir = deltaY > 0 ? Direction.DOWN : Direction.UP;
         }
+
+        Position primaryPos = from.getNeighbor(primaryDir);
+        if (board.canMoveTo(primaryPos) && isSafeMove(board, primaryPos)) {
+            return primaryDir;
+        }
+
+        // Essayer la direction secondaire
+        Direction secondaryDir = null;
+        if (Math.abs(deltaX) <= Math.abs(deltaY)) {
+            secondaryDir = deltaX > 0 ? Direction.RIGHT : Direction.LEFT;
+        } else {
+            secondaryDir = deltaY > 0 ? Direction.DOWN : Direction.UP;
+        }
+
+        Position secondaryPos = from.getNeighbor(secondaryDir);
+        if (board.canMoveTo(secondaryPos) && isSafeMove(board, secondaryPos)) {
+            return secondaryDir;
+        }
+
+        return null;
     }
 
     private int manhattanDistance(Position p1, Position p2) {
         return Math.abs(p1.getX() - p2.getX()) + Math.abs(p1.getY() - p2.getY());
     }
 
-    private boolean hasWallAt(Position pos) {
-        // Cette méthode devrait être implémentée selon votre GameBoard
-        // return board.hasWall(pos) || board.hasDestructibleWall(pos);
-        return false; // Placeholder
+    private int countAliveEnemies(List<Player> allPlayers) {
+        int count = 0;
+        for (Player player : allPlayers) {
+            if (player != this && player.isAlive()) {
+                count++;
+            }
+        }
+        return count;
     }
 
+    // Méthodes placeholder pour les fonctionnalités avancées
+    private boolean canTrapEnemy(GameBoard board, List<Player> allPlayers) {
+        return findTrappablePlayer(board, allPlayers, getPosition()) != null;
+    }
+
+    private Player findTrappablePlayer(GameBoard board, List<Player> allPlayers, Position myPos) {
+        // Implémentation simplifiée - cherche un joueur proche
+        for (Player player : allPlayers) {
+            if (player != this && player.isAlive() &&
+                    manhattanDistance(myPos, player.getPosition()) <= 3) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    private Position calculateTrapPosition(GameBoard board, Position playerPos) {
+        // Retourner une position à côté du joueur
+        for (Direction dir : Direction.values()) {
+            Position trapPos = playerPos.getNeighbor(dir);
+            if (board.canMoveTo(trapPos)) {
+                return trapPos;
+            }
+        }
+        return null;
+    }
+
+    private Position findNearestPowerUp(GameBoard board, Position myPos) {
+        // Placeholder - à implémenter selon votre système de power-ups
+        return null;
+    }
+
+    private Position findSafestPosition(GameBoard board, List<Player> allPlayers, Position myPos) {
+        // Chercher une position éloignée des autres joueurs
+        Position safest = null;
+        int maxDistance = 0;
+
+        for (int x = 0; x < com.bomberman.util.GameConstants.BOARD_WIDTH; x++) {
+            for (int y = 0; y < com.bomberman.util.GameConstants.BOARD_HEIGHT; y++) {
+                Position pos = new Position(x, y);
+                if (board.canMoveTo(pos)) {
+                    int minDistanceToEnemy = Integer.MAX_VALUE;
+                    for (Player player : allPlayers) {
+                        if (player != this && player.isAlive()) {
+                            int dist = manhattanDistance(pos, player.getPosition());
+                            minDistanceToEnemy = Math.min(minDistanceToEnemy, dist);
+                        }
+                    }
+                    if (minDistanceToEnemy > maxDistance) {
+                        maxDistance = minDistanceToEnemy;
+                        safest = pos;
+                    }
+                }
+            }
+        }
+        return safest;
+    }
+
+    private Position findBestWallCluster(GameBoard board, Position myPos) {
+        // Chercher le groupe de murs destructibles le plus intéressant
+        Position bestCluster = null;
+        int bestScore = 0;
+
+        for (int x = 0; x < com.bomberman.util.GameConstants.BOARD_WIDTH; x++) {
+            for (int y = 0; y < com.bomberman.util.GameConstants.BOARD_HEIGHT; y++) {
+                Position pos = new Position(x, y);
+                if (board.hasDestructibleWall(pos)) {
+                    int score = countNearbyWalls(board, pos) - manhattanDistance(myPos, pos);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestCluster = pos;
+                    }
+                }
+            }
+        }
+        return bestCluster;
+    }
+
+    private int countNearbyWalls(GameBoard board, Position center) {
+        int count = 0;
+        for (Direction dir : Direction.values()) {
+            Position nearby = center.getNeighbor(dir);
+            if (board.hasDestructibleWall(nearby)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private boolean isPlayerTrapped(Player player, Position myPos) {
+        Position playerPos = player.getPosition();
+        int freeDirections = 0;
+
+        // Compter les directions libres pour le joueur
+        for (Direction dir : Direction.values()) {
+            Position nextPos = playerPos.getNeighbor(dir);
+            if (board.canMoveTo(nextPos)) {
+                freeDirections++;
+            }
+        }
+
+        return freeDirections <= 2;
+    }
+
+    private int countFreeSpacesInDirection(GameBoard board, Position start, Direction dir) {
+        int count = 0;
+        Position current = start;
+
+        for (int i = 0; i < 5; i++) {
+            current = current.getNeighbor(dir);
+            if (board.canMoveTo(current)) {
+                count++;
+            } else {
+                break;
+            }
+        }
+
+        return count;
+    }
+
+    // Méthode principale pour déterminer si le bot veut poser une bombe
     public boolean wantsToPlaceBomb(GameBoard board, List<Player> allPlayers) {
+        if (!canPlaceBomb()) return false;
+
         Position myPos = getPosition();
 
-        // Placer une bombe si on peut tuer un joueur
-        Player target = findNearestPlayer(allPlayers, myPos);
-        if (target != null && canKillPlayer(board, myPos, target.getPosition())) {
+        // Vérifier d'abord qu'on peut s'échapper
+        if (!canEscapeAfterBombAt(board, myPos)) {
+            return false;
+        }
+
+        switch (currentState) {
+            case AGGRESSIVE:
+                // Poser une bombe si on peut tuer un joueur
+                Player target = findBestTarget(allPlayers, myPos);
+                if (target != null) {
+                    Position targetPos = target.getPosition();
+                    int distance = manhattanDistance(myPos, targetPos);
+                    // Conditions plus permissives
+                    if (distance <= getExplosionRange() &&
+                            (isInStraightLine(myPos, targetPos) || distance <= 2)) {
+                        return true;
+                    }
+                }
+                break;
+
+            case CORNER_TRAP:
+                // Poser une bombe pour piéger
+                Player victim = findTrappablePlayer(board, allPlayers, myPos);
+                if (victim != null) {
+                    int distance = manhattanDistance(myPos, victim.getPosition());
+                    if (distance <= getExplosionRange() && distance >= 1) {
+                        return true;
+                    }
+                }
+                break;
+
+            case WALL_BREAKING:
+                // Poser une bombe si on peut casser des murs
+                int wallsNearby = countNearbyWalls(board, myPos);
+                if (wallsNearby > 0) {
+                    return true;
+                }
+                break;
+
+            case DEFENSIVE:
+                // Poser une bombe si on est acculé
+                Player nearestEnemy = findBestTarget(allPlayers, myPos);
+                if (nearestEnemy != null) {
+                    int distance = manhattanDistance(myPos, nearestEnemy.getPosition());
+                    if (distance <= 2) { // Ennemi très proche
+                        return true;
+                    }
+                }
+                break;
+        }
+
+        // Logique de secours : poser une bombe occasionnellement
+        if (random.nextInt(100) < 5) { // 5% de chance
             return true;
         }
 
-        // Placer une bombe pour casser des murs
-        return shouldBreakWalls(board, myPos);
+        return false;
     }
 }
