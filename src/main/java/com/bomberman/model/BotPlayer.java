@@ -178,7 +178,7 @@ public class BotPlayer extends Player {
             }
         }
 
-        if (validDirs.isEmpty()) return null;
+        if (validDirs.isEmpty()) return null ;
 
         // Préférer se diriger vers un joueur ou des murs destructibles
         Player target = findNearestPlayer(allPlayers, myPos);
