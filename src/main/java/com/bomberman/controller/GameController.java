@@ -1,17 +1,24 @@
 package com.bomberman.controller;
 
+import com.bomberman.model.BotPlayer;
 import com.bomberman.model.Game;
+import com.bomberman.model.Player;
 import com.bomberman.util.Direction;
 import com.bomberman.view.GameView;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.ResourceBundle;
@@ -27,7 +34,8 @@ public class GameController implements Initializable {
     private GameView gameView;
     private AnimationTimer gameLoop;
     private Set<KeyCode> pressedKeys;
-    private Set<KeyCode> processedKeys; // Pour éviter la répétition des mouvements
+    private Set<KeyCode> processedKeys;
+    private int humanPlayerCount = 2; // Valeur par défaut
 
     // Contrôles des joueurs
     private static final KeyCode[][] PLAYER_CONTROLS = {
@@ -39,15 +47,36 @@ public class GameController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        game = new Game(4); // 4 joueurs
-        gameView = new GameView(gameCanvas);
         pressedKeys = new HashSet<>();
         processedKeys = new HashSet<>();
+
+        // Le jeu sera inizialisé quand setHumanPlayerCount sera appelé
+    }
+
+    public void setHumanPlayerCount(int humanPlayers) {
+        this.humanPlayerCount = humanPlayers;
+        System.out.println("Setting human player count to: " + humanPlayers);
+        initializeGame();
+    }
+
+    private void initializeGame() {
+        // Créer le jeu avec 4 joueurs au total, dont humanPlayerCount joueurs humains
+        game = new Game(4, humanPlayerCount);
+        gameView = new GameView(gameCanvas);
 
         initializeGameLoop();
         setupKeyHandlers();
 
         root.requestFocus();
+
+        System.out.println("Game initialized with " + humanPlayerCount + " human players");
+        // Debug: afficher les types de joueurs
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            Player player = game.getPlayer(i);
+            if (player != null) {
+                System.out.println("Player " + i + ": " + (player instanceof BotPlayer ? "Bot" : "Human"));
+            }
+        }
     }
 
     private void initializeGameLoop() {
@@ -58,6 +87,7 @@ public class GameController implements Initializable {
             public void handle(long now) {
                 if (now - lastUpdate >= 16_666_667) { // ~60 FPS
                     handleInput();
+                    handleBots();
                     game.update();
                     gameView.render(game);
                     updateStatus();
@@ -85,7 +115,11 @@ public class GameController implements Initializable {
 
         // Redémarrer le jeu avec R
         if (key == KeyCode.R) {
-            game.resetGame();
+            game.resetGame(humanPlayerCount);
+        }
+
+        if (key == KeyCode.ESCAPE) {
+            returnToMainMenu();
         }
     }
 
@@ -98,8 +132,16 @@ public class GameController implements Initializable {
     private void handleInput() {
         if (!game.isGameRunning()) return;
 
-        // Gérer les contrôles pour chaque joueur
-        for (int playerId = 0; playerId < Math.min(game.getPlayers().size(), PLAYER_CONTROLS.length); playerId++) {
+        // Gérer les contrôles pour chaque joueur humain
+        for (int playerId = 0; playerId < humanPlayerCount && playerId < PLAYER_CONTROLS.length; playerId++) {
+            Player player = game.getPlayer(playerId);
+
+            // Vérifier que ce joueur existe et n'est pas un bot
+            if (player == null || player instanceof BotPlayer) {
+                System.out.println("Skipping player " + playerId + " - is bot or null");
+                continue;
+            }
+
             KeyCode[] controls = PLAYER_CONTROLS[playerId];
 
             // Mouvement - seulement si la touche vient d'être pressée
@@ -128,16 +170,72 @@ public class GameController implements Initializable {
         }
     }
 
+    private void handleBots() {
+        if (!game.isGameRunning()) return;
+
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            Player player = game.getPlayer(i);
+            if (player instanceof BotPlayer) {
+                BotPlayer bot = (BotPlayer) player;
+                bot.makeMove(game.getBoard(), game.getPlayers());
+
+                // Vérifier si le bot veut placer une bombe
+                if (bot.wantsToPlaceBomb(game.getBoard(), game.getPlayers())) {
+                    game.placeBomb(i);
+                }
+            }
+        }
+    }
+
     private void updateStatus() {
         if (!game.isGameRunning()) {
             if (game.getWinner() != null) {
-                statusText.setText("Joueur " + (game.getWinner().getId() + 1) + " a gagné ! Appuyez sur R pour rejouer.");
+                Player winner = game.getWinner();
+                String playerType = (winner instanceof BotPlayer) ? "Bot " : "Joueur ";
+                statusText.setText(playerType + (winner.getId() + 1) + " a gagné ! Appuyez sur R pour rejouer.");
             } else {
                 statusText.setText("Égalité ! Appuyez sur R pour rejouer.");
             }
         } else {
-            long alivePlayers = game.getPlayers().stream().filter(p -> p.isAlive()).count();
-            statusText.setText("Joueurs en vie: " + alivePlayers + " | Contrôles: J1(ZQSD+A) J2(Flèches+Entrée) J3(IJKL+U) J4(Pavé+0)");
+            // Compter les joueurs vivants en fonction de leur type réel
+            long humanAlive = 0;
+            long botsAlive = 0;
+
+            for (int i = 0; i < game.getPlayers().size(); i++) {
+                Player player = game.getPlayer(i);
+                if (player != null && player.isAlive()) {
+                    if (player instanceof BotPlayer) {
+                        botsAlive++;
+                    } else {
+                        humanAlive++;
+                    }
+                }
+            }
+
+            statusText.setText("Joueurs en vie: " + humanAlive + " | Bots en vie: " + botsAlive +
+                    " | Contrôles: J1(ZQSD+A) J2(Flèches+Entrée) J3(IJKL+U) J4(Pavé+0)");
+        }
+    }
+
+    private void returnToMainMenu() {
+        if (gameLoop != null) {
+            gameLoop.stop(); // Arrêter la boucle de jeu
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
+            Parent rootParent = loader.load();
+            Scene scene = new Scene(rootParent, 800, 600);
+            scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
+
+            Stage stage = (Stage) root.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setResizable(false);
+
+            // Focus sur la scene pour les événements clavier
+            scene.getRoot().requestFocus();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

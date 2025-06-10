@@ -1,5 +1,6 @@
 package com.bomberman.view;
 
+import com.bomberman.controller.AvatarController;
 import com.bomberman.model.*;
 import com.bomberman.util.GameConstants;
 import com.bomberman.util.Position;
@@ -9,7 +10,9 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
 public class GameView {
     private Canvas canvas;
@@ -18,7 +21,8 @@ public class GameView {
     private Image wallImages;
     private Image wallDestructible;
     private Image bomb;
-
+    private Map<Explosion.ExplosionType, Image> explosionImages;
+    private Texture texture;
 
     public GameView(Canvas canvas) {
         this.canvas = canvas;
@@ -28,22 +32,45 @@ public class GameView {
         canvas.setWidth(GameConstants.BOARD_WIDTH * GameConstants.CELL_SIZE);
         canvas.setHeight(GameConstants.BOARD_HEIGHT * GameConstants.CELL_SIZE);
 
+        //pack de texture
+        loadSelectTexturePack();
         loadAllImage();
     }
+
+    private void loadSelectTexturePack() {
+        Preferences texturePrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        String textureName = texturePrefs.get(AvatarController.TEXTURE_PACK_KEY, "defaut");
+        System.out.println("Texture name loaded from preferences: " + textureName);
+
+        if ("defaut".equals(textureName)) {
+            this.texture = new Texture("defaut", "/image/defaut/");
+            System.out.println("Using default texture pack");
+        } else if ("fnaf".equals(textureName)) {
+            this.texture = new Texture("fnaf", "/image/fnaf/");
+            System.out.println("Using fnaf texture pack");
+        } else {
+            this.texture = new Texture("defaut", "/image/defaut/");
+            System.out.println("Unknown texture, falling back to default: " + textureName);
+        }
+
+        System.out.println("Final texture path: " + this.texture.getPath());
+    }
+
 
     private void loadAllImage() {
         loadPlayerImage();
         loadWallImage();
         loadbombImage();
+        loadExplosionImages();
     }
 
     private void loadPlayerImage() {
         PlayerImage = new HashMap<>();
         try {
-            PlayerImage.put(0, new Image(getClass().getResourceAsStream("/image/player1.png")));
-            PlayerImage.put(1, new Image(getClass().getResourceAsStream("/image/player2.png")));
-            PlayerImage.put(2, new Image(getClass().getResourceAsStream("/image/player3.png")));
-            PlayerImage.put(3, new Image(getClass().getResourceAsStream("/image/player4.png")));
+            PlayerImage.put(0, new Image(getClass().getResourceAsStream(texture.getPath() + "player1.png")));
+            PlayerImage.put(1, new Image(getClass().getResourceAsStream(texture.getPath() + "player2.png")));
+            PlayerImage.put(2, new Image(getClass().getResourceAsStream(texture.getPath() + "player3.png")));
+            PlayerImage.put(3, new Image(getClass().getResourceAsStream(texture.getPath() + "player4.png")));
         }catch (Exception e) {
             System.err.println("Error loading player image");
         }
@@ -51,8 +78,8 @@ public class GameView {
 
     private void loadWallImage() {
         try {
-            wallImages = new Image(getClass().getResourceAsStream("/image/wall.png"));
-            wallDestructible = new Image(getClass().getResourceAsStream("/image/destructible_wall.png"));
+            wallImages = new Image(getClass().getResourceAsStream(texture.getPath() + "wall.png"));
+            wallDestructible = new Image(getClass().getResourceAsStream(texture.getPath() + "destructible_wall.png"));
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement des images de murs: " + e.getMessage());
         }
@@ -60,12 +87,27 @@ public class GameView {
 
     private void loadbombImage() {
         try{
-            bomb = new Image(getClass().getResourceAsStream("/image/bomb.png"));
+            bomb = new Image(getClass().getResourceAsStream(texture.getPath() + "bomb.png"));
         }catch (Exception e) {
             System.err.println("Erreur image bomb");
         }
     }
 
+    private void loadExplosionImages() {
+        explosionImages = new HashMap<>();
+        try {
+            explosionImages.put(Explosion.ExplosionType.CENTER,
+                    new Image(getClass().getResourceAsStream(texture.getPath() + "explosion_centre.png")));
+            explosionImages.put(Explosion.ExplosionType.VERTICAL,
+                    new Image(getClass().getResourceAsStream(texture.getPath() + "explosion_horizontal.png")));
+            explosionImages.put(Explosion.ExplosionType.HORIZONTAL,
+                    new Image(getClass().getResourceAsStream(texture.getPath() +"explosion_vertical.png")));
+            explosionImages.put(Explosion.ExplosionType.END,
+                    new Image(getClass().getResourceAsStream(texture.getPath() + "explosion_end.png")));
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des images d'explosion: " + e.getMessage());
+        }
+    }
 
     public void render(Game game) {
         clearCanvas();
@@ -185,29 +227,62 @@ public class GameView {
             boolean blink = (timeLeft < 1000) && (System.currentTimeMillis() / 200) % 2 == 0;
 
             if (!blink) {
-                gc.setFill(Color.BLACK);
-                gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+                if (this.bomb != null && !this.bomb.isError()) {
+                    gc.drawImage(this.bomb, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+                } else {
+                    // Fallback
+                    gc.setFill(Color.BLACK);
+                    gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
 
-                // Mèche
-                gc.setStroke(Color.ORANGE);
-                gc.setLineWidth(3);
-                gc.strokeLine(x + GameConstants.CELL_SIZE/2, y + 5,
-                        x + GameConstants.CELL_SIZE/2, y);
+                    // Mèche
+                    gc.setStroke(Color.ORANGE);
+                    gc.setLineWidth(3);
+                    gc.strokeLine(x + GameConstants.CELL_SIZE/2, y + 5,
+                            x + GameConstants.CELL_SIZE/2, y);
+                }
             }
         }
     }
 
     private void drawExplosions(GameBoard board) {
         for (Explosion explosion : board.getExplosions()) {
-            gc.setFill(Color.YELLOW);
-            for (Position pos : explosion.getPositions()) {
+            Map<Position, Explosion.ExplosionType> explosionTypes = explosion.getAllExplosionTypes();
+
+            for (Map.Entry<Position, Explosion.ExplosionType> entry : explosionTypes.entrySet()) {
+                Position pos = entry.getKey();
+                Explosion.ExplosionType type = entry.getValue();
+
                 int x = pos.getX() * GameConstants.CELL_SIZE;
                 int y = pos.getY() * GameConstants.CELL_SIZE;
-                gc.fillRect(x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
 
-                // Effet de flamme
-                gc.setFill(Color.ORANGE);
-                gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+
+                Image explosionImage = explosionImages.get(type);
+
+                if (explosionImage != null && !explosionImage.isError()) {
+                    gc.drawImage(explosionImage, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+                } else {
+                    // Fallback avec couleurs différentes selon le type
+                    switch (type) {
+                        case CENTER:
+                            gc.setFill(Color.WHITE);
+                            break;
+                        case HORIZONTAL:
+                            gc.setFill(Color.YELLOW);
+                            break;
+                        case VERTICAL:
+                            gc.setFill(Color.ORANGE);
+                            break;
+                        case END:
+                            gc.setFill(Color.RED);
+                            break;
+                    }
+
+                    gc.fillRect(x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+
+                    // Effet de flamme au centre
+                    gc.setFill(Color.ORANGE);
+                    gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+                }
             }
         }
     }
@@ -228,7 +303,6 @@ public class GameView {
                 gc.setFill(Color.web(player.getColor()));
                 gc.fillRect(x+3, y+3, GameConstants.CELL_SIZE-6 , GameConstants.CELL_SIZE-6);
             }
-
 
             // Numéro du joueur
             gc.setFill(Color.WHITE);
