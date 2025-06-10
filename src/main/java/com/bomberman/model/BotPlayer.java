@@ -24,34 +24,36 @@ public class BotPlayer extends Player {
 
         Position myPos = getPosition();
 
-        // PRIORITÉ 1: Fuir si on est en danger
+        // PRIORITÉ 1 : Fuir si on est en danger
         if (isInDanger(board, myPos)) {
             Direction escapeDir = findEscapeDirection(board, myPos);
             if (escapeDir != null) {
                 move(escapeDir, board);
-                return;
             }
-        }
-
-        // PRIORITÉ 2: Attaquer un joueur proche
-        Player target = findNearestPlayer(allPlayers, myPos);
-        if (target != null && canKillPlayer(board, myPos, target.getPosition())) {
-            // Poser une bombe (sera géré par le GameController)
             return;
         }
 
-        // PRIORITÉ 3: Casser des murs
-        if (canPlaceBomb() && shouldBreakWalls(board, myPos)) {
-            // Poser une bombe pour casser des murs
+        // PRIORITÉ 2 : Poser une bombe aléatoirement (et intelligemment)
+        if (canPlaceBomb() && wantsToPlaceBombRandomly(board, myPos)) {
+            // Le GameController doit gérer la pose réelle de la bombe
             return;
         }
 
-        // PRIORITÉ 4: Se déplacer vers l'objectif
+        // PRIORITÉ 3 : Mouvement aléatoire ou vers un objectif
         Direction moveDir = chooseMovementDirection(board, allPlayers, myPos);
         if (moveDir != null) {
             move(moveDir, board);
         }
     }
+
+    private boolean wantsToPlaceBombRandomly(GameBoard board, Position myPos) {
+        // 10% de chance de poser une bombe, uniquement si on peut s’échapper ensuite
+        if (random.nextDouble() < 0.1) {
+            return canEscapeAfterBomb(board, myPos);
+        }
+        return false;
+    }
+
 
     // Vérifie si on est en danger immédiat
     private boolean isInDanger(GameBoard board, Position pos) {
@@ -73,6 +75,7 @@ public class BotPlayer extends Player {
 
         return false;
     }
+
 
     // Trouve une direction pour échapper au danger
     private Direction findEscapeDirection(GameBoard board, Position pos) {
