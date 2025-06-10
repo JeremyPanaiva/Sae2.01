@@ -50,8 +50,6 @@ public class BotPlayer extends Player {
         // Adapter la stratégie selon la situation
         adaptStrategy(board, allPlayers);
 
-        // Exécuter l'action selon l'état actuel
-        executeStrategy(board, allPlayers, myPos);
     }
 
     private void adaptStrategy(GameBoard board, List<Player> allPlayers) {
@@ -69,23 +67,6 @@ public class BotPlayer extends Player {
         // Sinon casser des murs pour les power-ups
         else {
             currentState = BotState.WALL_BREAKING;
-        }
-    }
-
-    private void executeStrategy(GameState board, List<Player> allPlayers, Position myPos) {
-        switch (currentState) {
-            case AGGRESSIVE:
-                executeAggressiveStrategy(board, allPlayers, myPos);
-                break;
-            case DEFENSIVE:
-                executeDefensiveStrategy(board, allPlayers, myPos);
-                break;
-            case WALL_BREAKING:
-                executeWallBreakingStrategy(board, myPos);
-                break;
-            case CORNER_TRAP:
-                executeCornerTrapStrategy(board, allPlayers, myPos);
-                break;
         }
     }
 
@@ -514,12 +495,7 @@ public class BotPlayer extends Player {
         int freeDirections = 0;
 
         // Compter les directions libres pour le joueur
-        for (Direction dir : Direction.values()) {
-            Position nextPos = playerPos.getNeighbor(dir);
-            if (board.canMoveTo(nextPos)) {
-                freeDirections++;
-            }
-        }
+
 
         return freeDirections <= 2;
     }
