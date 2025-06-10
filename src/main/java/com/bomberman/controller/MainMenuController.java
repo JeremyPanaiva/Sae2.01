@@ -28,10 +28,10 @@ public class MainMenuController {
     @FXML
     private void handlePlay(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/game.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/playerSelection.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root, 800, 600);
-            scene.getStylesheets().add(getClass().getResource("/css/game.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/playerSelection.css").toExternalForm());
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
@@ -42,6 +42,7 @@ public class MainMenuController {
             scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();
+            System.err.println("Erreur lors du chargement de la sélection de joueurs: " + e.getMessage());
         }
     }
 

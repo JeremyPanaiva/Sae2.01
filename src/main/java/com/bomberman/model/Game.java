@@ -20,22 +20,30 @@ public class Game {
     private boolean gameRunning;
     private Player winner;
     private Stage primaryStage;
+    private int humanPlayerCount; // Nouveau champ pour stocker le nombre de joueurs humains
 
-    public Game(int numPlayers) {
+    public Game(int totalPlayers, int humanPlayers) {
+        this.humanPlayerCount = humanPlayers;
         board = new GameBoard();
         players = new ArrayList<>();
         gameRunning = true;
         winner = null;
 
+        initializePlayers(totalPlayers, humanPlayers);
 
-        initializePlayers(numPlayers);
+        // Incrémenter les compteurs de matchs
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY3);
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY4);
     }
 
-    private void initializePlayers(int numPlayers) {
+    // Constructeur de compatibilité (pour l'ancien code)
+    public Game(int numPlayers) {
+        this(numPlayers, numPlayers); // Tous les joueurs sont humains par défaut
+    }
+
+    private void initializePlayers(int totalPlayers, int humanPlayers) {
         Position[] startPositions = {
                 new Position(1, 1),
                 new Position(GameConstants.BOARD_WIDTH - 2, 1),
@@ -43,12 +51,18 @@ public class Game {
                 new Position(GameConstants.BOARD_WIDTH - 2, GameConstants.BOARD_HEIGHT - 2)
         };
 
-        for (int i = 0; i < Math.min(numPlayers, GameConstants.MAX_PLAYERS); i++) {
+        int actualTotalPlayers = Math.min(totalPlayers, GameConstants.MAX_PLAYERS);
+        int actualHumanPlayers = Math.min(humanPlayers, actualTotalPlayers);
+
+        // Créer les joueurs humains d'abord
+        for (int i = 0; i < actualHumanPlayers; i++) {
             players.add(new Player(i, startPositions[i], GameConstants.PLAYER_COLORS[i]));
         }
 
-        //compteur nb match total
-
+        // Créer les bots pour compléter
+        for (int i = actualHumanPlayers; i < actualTotalPlayers; i++) {
+            players.add(new BotPlayer(i, startPositions[i], GameConstants.PLAYER_COLORS[i]));
+        }
     }
 
     public Game(int numPlayers, Stage stage) {
@@ -59,21 +73,25 @@ public class Game {
     public void movePlayer(int playerId, Direction direction) {
         if (!gameRunning) return;
 
-        Player player = players.get(playerId);
-        if (player != null && player.isAlive()) {
-            player.move(direction, board);
-            checkPowerUpCollection(player);
+        if (playerId >= 0 && playerId < players.size()) {
+            Player player = players.get(playerId);
+            if (player != null && player.isAlive()) {
+                player.move(direction, board);
+                checkPowerUpCollection(player);
+            }
         }
     }
 
     public void placeBomb(int playerId) {
         if (!gameRunning) return;
 
-        Player player = players.get(playerId);
-        if (player != null && player.isAlive() && player.canPlaceBomb()) {
-            Bomb bomb = new Bomb(player.getPosition(), player);
-            board.placeBomb(bomb);
-            player.placeBomb();
+        if (playerId >= 0 && playerId < players.size()) {
+            Player player = players.get(playerId);
+            if (player != null && player.isAlive() && player.canPlaceBomb()) {
+                Bomb bomb = new Bomb(player.getPosition(), player);
+                board.placeBomb(bomb);
+                player.placeBomb();
+            }
         }
     }
 
@@ -199,21 +217,24 @@ public class Game {
     }
 
     public void resetGame() {
+        resetGame(this.humanPlayerCount);
+    }
+
+    public void resetGame(int humanPlayers) {
+        this.humanPlayerCount = humanPlayers;
         board = new GameBoard();
         gameRunning = true;
         winner = null;
 
-        // Réinitialiser les joueurs
-        Position[] startPositions = {
-                new Position(1, 1),
-                new Position(GameConstants.BOARD_WIDTH - 2, 1),
-                new Position(1, GameConstants.BOARD_HEIGHT - 2),
-                new Position(GameConstants.BOARD_WIDTH - 2, GameConstants.BOARD_HEIGHT - 2)
-        };
+        // Réinitialiser les joueurs avec le bon nombre de joueurs humains
+        players.clear();
+        initializePlayers(4, humanPlayers); // Toujours 4 joueurs au total
 
-        for (int i = 0; i < players.size(); i++) {
-            players.set(i, new Player(i, startPositions[i], GameConstants.PLAYER_COLORS[i]));
-        }
+        // Incrémenter les compteurs de matchs
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY3);
+        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY4);
     }
 
     // Getters
@@ -222,7 +243,18 @@ public class Game {
     public boolean isGameRunning() { return gameRunning; }
     public Player getWinner() { return winner; }
     public void setPrimaryStage(Stage stage) { this.primaryStage = stage; }
+    public int getHumanPlayerCount() { return humanPlayerCount; }
 
+    // Méthode corrigée pour obtenir un joueur par son ID
+    public Player getPlayer(int playerId) {
+        if (playerId >= 0 && playerId < players.size()) {
+            return players.get(playerId);
+        }
+        return null;
+    }
 
+    // Méthode pour obtenir le nombre total de joueurs
+    public int getTotalPlayerCount() {
+        return players.size();
+    }
 }
-
