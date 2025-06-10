@@ -221,7 +221,7 @@ public class AvatarController implements Initializable {
     private void loadTexturePack() {
         textures = new ArrayList<>();
         textures.add(new Texture("defaut", "/image/defaut/"));
-        textures.add(new Texture("fanf", "/image/fnaf/"));
+        textures.add(new Texture("fnaf", "/image/fnaf/"));
         texturePackComboBox.setItems(FXCollections.observableArrayList(textures));
 
         Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());

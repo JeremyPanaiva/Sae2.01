@@ -40,12 +40,20 @@ public class GameView {
     private void loadSelectTexturePack() {
         Preferences texturePrefs = Preferences.userRoot().node(AvatarController.class.getName());
         String textureName = texturePrefs.get(AvatarController.TEXTURE_PACK_KEY, "defaut");
-        System.out.println("Texture path loaded: " + textureName);
+        System.out.println("Texture name loaded from preferences: " + textureName);
+
         if ("defaut".equals(textureName)) {
-            this.texture = new Texture("defaut", "image/defaut/");
-        }else if ("fnaf".equals(textureName)) {
-            this.texture = new Texture("fnaf", "image/fnaf/");
+            this.texture = new Texture("defaut", "/image/defaut/");
+            System.out.println("Using default texture pack");
+        } else if ("fnaf".equals(textureName)) {
+            this.texture = new Texture("fnaf", "/image/fnaf/");
+            System.out.println("Using fnaf texture pack");
+        } else {
+            this.texture = new Texture("defaut", "/image/defaut/");
+            System.out.println("Unknown texture, falling back to default: " + textureName);
         }
+
+        System.out.println("Final texture path: " + this.texture.getPath());
     }
 
 
