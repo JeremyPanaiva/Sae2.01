@@ -1,7 +1,7 @@
 .game-container{
     -fx-background-image: url("../image/background.png");
     -fx-background-size: cover;
-    -fx-background-position: Center;
+    -fx-background-position: center;
     -fx-background-repeat: no-repeat;
 }
 

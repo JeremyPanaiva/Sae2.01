@@ -28,6 +28,7 @@ public class Game {
         winner = null;
 
 
+        //compteur de match +1 dès qu'une partie commence
         initializePlayers(numPlayers);
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
@@ -173,7 +174,7 @@ public class Game {
             gameRunning = false;
             if (alivePlayers.size() == 1) {
                 winner = alivePlayers.get(0);
-                System.out.println("Winner is " + winner.getId());
+                //récupére l'Id au player pour fair +1 dans ses match gagner
                 com.bomberman.controller.AvatarController.incrementNbMatchGagner(winner.getId());
             }
         }

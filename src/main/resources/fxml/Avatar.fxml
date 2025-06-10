@@ -6,34 +6,45 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" styleClass="game-container" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bomberman.controller.AvatarController">
+
+    <!-- Bouton fermer -->
     <Button onAction="#closeButtonAction" styleClass="Close" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
         <cursor>
             <Cursor fx:constant="HAND" />
         </cursor>
     </Button>
 
-    <ComboBox fx:id="texturePackComboBox" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="30">
+    <!-- Selectionner le ressource pack  -->
+    <ComboBox fx:id="texturePackComboBox" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="40">
       <cursor>
          <Cursor fx:constant="HAND" />
       </cursor></ComboBox>
-    <Button fx:id="savegarderTexture" styleClass="sauvegarderTexture" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10" onAction="#sauvegarderTexturePack">
+
+    <!-- bouton pour sauvegarder le pack de ressource selectionner -->
+    <Button fx:id="savegarderTexture" styleClass="sauvegardeSpeudo" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10" onAction="#sauvegarderTexturePack">
       <cursor>
          <Cursor fx:constant="HAND" />
       </cursor></Button>
+
+
     <VBox styleClass="Avatar">
         <HBox spacing="80">
 
+            <!-- Zone Avatar 1 -->
             <VBox styleClass="Avatar-container1">
+                <!-- Image + bouton pour changer l'image -->
                 <HBox styleClass="image-container">
                     <ImageView fx:id="avatarImageView1" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
                         <Image url="@../image/Avatar1.png" />
                     </ImageView>
+
                     <Button fx:id="choisirImage1" onAction="#changerImage1" styleClass="sauvegardeImage">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- speudo + bouton pour sauvegarder le bouton -->
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo1" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 1" styleClass="speudo" />
                     <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
@@ -42,11 +53,14 @@
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- afficher les score  -->
                 <Label fx:id="nbMatch1" />
                 <Label fx:id="nbMatchGagner1" />
             </VBox>
 
+            <!-- Zone Avatar 2 -->
             <VBox styleClass="Avatar-container1">
+                <!-- Image + bouton pour changer l'image -->
                 <HBox styleClass="image-container">
                     <ImageView fx:id="avatarImageView2" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
                         <Image url="@../image/Avatar2.png" />
@@ -57,6 +71,7 @@
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- speudo + bouton pour sauvegarder le bouton -->
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo2" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 2" styleClass="speudo" />
                     <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
@@ -65,13 +80,16 @@
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- afficher les score  -->
                 <Label fx:id="nbMatch2" />
                 <Label fx:id="nbMatchGagner2" />
             </VBox>
         </HBox>
 
         <HBox spacing="80">
+            <!-- Zone Avatar 3 -->
             <VBox styleClass="Avatar-container1">
+                <!-- Image + bouton pour changer l'image -->
                 <HBox styleClass="image-container">
                     <ImageView fx:id="avatarImageView3" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
                         <Image url="@../image/Avatar3.png" />
@@ -82,6 +100,7 @@
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- speudo + bouton pour sauvegarder le bouton -->
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo3" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 3" styleClass="speudo" />
                     <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
@@ -90,11 +109,14 @@
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- afficher les score  -->
                 <Label fx:id="nbMatch3" />
                 <Label fx:id="nbMatchGagner3" />
             </VBox>
 
+            <!-- Zone Avatar 4 -->
             <VBox styleClass="Avatar-container1">
+                <!-- Image + bouton pour changer l'image -->
                 <HBox styleClass="image-container">
                     <ImageView fx:id="avatarImageView4" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
                         <Image url="@../image/Avatar4.png" />
@@ -105,6 +127,7 @@
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- speudo + bouton pour sauvegarder le bouton -->
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo4" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 4" styleClass="speudo" />
                     <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
@@ -113,6 +136,7 @@
                         </cursor>
                     </Button>
                 </HBox>
+                <!-- afficher les score  -->
                 <Label fx:id="nbMatch4" />
                 <Label fx:id="nbMatchGagner4" />
             </VBox>

@@ -1,6 +1,5 @@
 package com.bomberman.controller;
 
-import com.bomberman.model.Game;
 import com.bomberman.model.Texture;
 import com.bomberman.view.GameView;
 import javafx.collections.FXCollections;
@@ -11,7 +10,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -30,6 +28,7 @@ import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 
 public class AvatarController implements Initializable {
+    // initialise les textfiel pour les speudo
     @FXML
     private TextField speudo1;
     @FXML
@@ -39,6 +38,7 @@ public class AvatarController implements Initializable {
     @FXML
     private TextField speudo4;
 
+    // initialise Les Labels pour les compteurs de matchs totals
     @FXML
     public Label nbMatchGagner1;
     @FXML
@@ -48,6 +48,7 @@ public class AvatarController implements Initializable {
     @FXML
     public Label nbMatchGagner4;
 
+    // initialise les compteurs nombre de matchs gagné
     @FXML
     public Label nbMatch1;
     @FXML
@@ -57,6 +58,7 @@ public class AvatarController implements Initializable {
     @FXML
     public Label nbMatch4;
 
+    // initialise les images des Avatars
     @FXML
     private ImageView avatarImageView1;
     @FXML
@@ -66,6 +68,7 @@ public class AvatarController implements Initializable {
     @FXML
     private ImageView avatarImageView4;
 
+    // initialise le ressource pack
     @FXML
     private ComboBox<Texture> texturePackComboBox;
     @FXML
@@ -78,6 +81,8 @@ public class AvatarController implements Initializable {
     public  List<Texture> textures;
     private GameView gameView;
 
+
+    //créer les clef pour les pref utilisateur
     private static final String PSEUDO_KEY_1 = "pseudo1";
     private static final String PSEUDO_KEY_2 = "pseudo2";
     private static final String PSEUDO_KEY_3 = "pseudo3";
@@ -108,13 +113,18 @@ public class AvatarController implements Initializable {
     private Button closeButton;
 
     @FXML
+    //charge le jeu une fois appyer sur le bouton close
     private void closeButtonAction(ActionEvent event) {
         try {
+            //chager le FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
             Parent root = loader.load();
+            //défini la taille de la fenêtre et la créer
             Scene scene = new Scene(root, 800, 600);
+            //charge le css
             scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
 
+            //définit la nouvelle scene
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
             stage.setResizable(false);
@@ -128,6 +138,7 @@ public class AvatarController implements Initializable {
     }
 
     @FXML
+    //permet de sauvegarder les speudo
     private void savePseudos() {
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
         prefs.put(PSEUDO_KEY_1, speudo1.getText());
@@ -137,14 +148,17 @@ public class AvatarController implements Initializable {
 
     }
 
+    //incrémenter le nombre de match total
     public static void incrementTotalMatch(String key) {
         Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getSimpleName());
         int total = matchPrefs.getInt(key, 0);
         matchPrefs.putInt(key, total + 1);
     }
 
+    //incrémente le nombre de match gagné
     public static void incrementNbMatchGagner(int playerNumber) {
         Preferences matchGagnerPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        //rajoute +1 en fonction de l'ID
         String key = switch (playerNumber) {
             case 0 -> TOTAL_MATCH_GAGNER_KEY1;
             case 1 -> TOTAL_MATCH_GAGNER_KEY2;
@@ -159,26 +173,31 @@ public class AvatarController implements Initializable {
     }
 
     @FXML
+    //permet de charger les image
     private void changerImage1() {
         selectImageForPlayer(avatarImageView1, IMAGE_PATH_KEY1);
     }
 
     @FXML
+    //permet de charger les image
     private void changerImage2() {
         selectImageForPlayer(avatarImageView2, IMAGE_PATH_KEY2);
     }
 
     @FXML
+    //permet de charger les image
     private void changerImage3() {
         selectImageForPlayer(avatarImageView3, IMAGE_PATH_KEY3);
     }
 
     @FXML
+    //permet de charger les image
     private void changerImage4() {
         selectImageForPlayer(avatarImageView4, IMAGE_PATH_KEY4);
     }
 
 
+    //permet de selectionner une image pour un joueur
     private void selectImageForPlayer(ImageView imageView, String key) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("choisir une image");
@@ -194,6 +213,7 @@ public class AvatarController implements Initializable {
         ImagePref.put(key, file.getAbsolutePath());
     }
 
+    //permet de charger soir l'image selectionner soit l'image par défaut
     private void loadImage(ImageView imageView, String key, String defaultImage) {
         Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
         String imagePath = ImagePref.get(key, null);
@@ -218,10 +238,11 @@ public class AvatarController implements Initializable {
         }
     }
 
+    //charge les pack de texture disponible
     private void loadTexturePack() {
         textures = new ArrayList<>();
         textures.add(new Texture("defaut", "/image/defaut/"));
-        textures.add(new Texture("fnaf", "/image/fnaf/"));
+        textures.add(new Texture("mario", "/image/mario/"));
         texturePackComboBox.setItems(FXCollections.observableArrayList(textures));
 
         Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());
@@ -230,13 +251,13 @@ public class AvatarController implements Initializable {
         for(Texture texture : textures) {
             if(texture.getNom().equals(textureName)) {
                 texturePackComboBox.getSelectionModel().select(texture);
-                System.out.println("1" + texture.getNom());
                 break;
             }
         }
     }
 
     @FXML
+    //sauvegarde le pack de texture pour le charger plus tard
     private void sauvegarderTexturePack() {
         Texture selectedTexture = texturePackComboBox.getSelectionModel().getSelectedItem();
         if(selectedTexture != null) {
@@ -246,7 +267,7 @@ public class AvatarController implements Initializable {
     }
 
 
-
+    //méthode d'initilisation charger automatiquement
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         //speudo
@@ -273,10 +294,10 @@ public class AvatarController implements Initializable {
         int WinsPlayer2 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY2, 0);
         int WinsPlayer3 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY3, 0);
         int Winsplayer4 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY4, 0);
-        nbMatchGagner1.setText(String.valueOf("nombre match gagner : " + WinsPlayer));
-        nbMatchGagner2.setText(String.valueOf("nombre match gagner : " + WinsPlayer2));
-        nbMatchGagner3.setText(String.valueOf("nombre match gagner : " + WinsPlayer3));
-        nbMatchGagner4.setText(String.valueOf("nombre match gagner : " + Winsplayer4));
+        nbMatchGagner1.setText(String.valueOf("nombre matchs gagné : " + WinsPlayer));
+        nbMatchGagner2.setText(String.valueOf("nombre matchs gagné : " + WinsPlayer2));
+        nbMatchGagner3.setText(String.valueOf("nombre matchs gagné : " + WinsPlayer3));
+        nbMatchGagner4.setText(String.valueOf("nombre matchs gagné : " + Winsplayer4));
 
 
         //charger image
@@ -290,6 +311,3 @@ public class AvatarController implements Initializable {
 
     }
 }
-
-
-
