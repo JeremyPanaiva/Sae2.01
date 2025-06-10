@@ -108,7 +108,8 @@ public class Game {
         bomb.getOwner().bombExploded();
 
         List<Position> explosionPositions = calculateExplosionPositions(bomb);
-        board.addExplosion(new Explosion(explosionPositions));
+        // Passer la position centrale de la bombe pour categoriser les explosions
+        board.addExplosion(new Explosion(explosionPositions, bomb.getPosition()));
 
         // Détruire les murs destructibles
         for (Position pos : explosionPositions) {
@@ -172,6 +173,7 @@ public class Game {
             gameRunning = false;
             if (alivePlayers.size() == 1) {
                 winner = alivePlayers.get(0);
+                System.out.println("Winner is " + winner.getId());
                 com.bomberman.controller.AvatarController.incrementNbMatchGagner(winner.getId());
             }
         }

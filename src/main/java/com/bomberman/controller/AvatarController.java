@@ -1,5 +1,9 @@
 package com.bomberman.controller;
 
+import com.bomberman.model.Game;
+import com.bomberman.model.Texture;
+import com.bomberman.view.GameView;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -7,7 +11,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -18,6 +24,8 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 
@@ -59,9 +67,16 @@ public class AvatarController implements Initializable {
     private ImageView avatarImageView4;
 
     @FXML
+    private ComboBox<Texture> texturePackComboBox;
+    @FXML
+    private Button sauvegarderTexture;
+
+    @FXML
     private Button choisirImage;
     private Stage stage;
 
+    public  List<Texture> textures;
+    private GameView gameView;
 
     private static final String PSEUDO_KEY_1 = "pseudo1";
     private static final String PSEUDO_KEY_2 = "pseudo2";
@@ -87,6 +102,7 @@ public class AvatarController implements Initializable {
     private static final String DEFAULT_IMAGE_3 = "/image/Avatar3.png";
     private static final String DEFAULT_IMAGE_4 = "/image/Avatar4.png";
 
+    public static final String TEXTURE_PACK_KEY = "texturePack";
 
     @FXML
     private Button closeButton;
@@ -129,11 +145,11 @@ public class AvatarController implements Initializable {
 
     public static void incrementNbMatchGagner(int playerNumber) {
         Preferences matchGagnerPrefs = Preferences.userRoot().node(AvatarController.class.getName());
-        String key = switch (playerNumber){
-            case 1 -> TOTAL_MATCH_GAGNER_KEY1;
-            case 2 -> TOTAL_MATCH_GAGNER_KEY2;
-            case 3 -> TOTAL_MATCH_GAGNER_KEY3;
-            case 4 -> TOTAL_MATCH_GAGNER_KEY4;
+        String key = switch (playerNumber) {
+            case 0 -> TOTAL_MATCH_GAGNER_KEY1;
+            case 1 -> TOTAL_MATCH_GAGNER_KEY2;
+            case 2 -> TOTAL_MATCH_GAGNER_KEY3;
+            case 3 -> TOTAL_MATCH_GAGNER_KEY4;
             default -> throw new IllegalStateException("Unexpected value: " + playerNumber);
         };
 
@@ -146,14 +162,17 @@ public class AvatarController implements Initializable {
     private void changerImage1() {
         selectImageForPlayer(avatarImageView1, IMAGE_PATH_KEY1);
     }
+
     @FXML
     private void changerImage2() {
         selectImageForPlayer(avatarImageView2, IMAGE_PATH_KEY2);
     }
+
     @FXML
     private void changerImage3() {
         selectImageForPlayer(avatarImageView3, IMAGE_PATH_KEY3);
     }
+
     @FXML
     private void changerImage4() {
         selectImageForPlayer(avatarImageView4, IMAGE_PATH_KEY4);
@@ -174,6 +193,59 @@ public class AvatarController implements Initializable {
         Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
         ImagePref.put(key, file.getAbsolutePath());
     }
+
+    private void loadImage(ImageView imageView, String key, String defaultImage) {
+        Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
+        String imagePath = ImagePref.get(key, null);
+        if (imagePath != null) {
+            try {
+            File imageFile = new File(imagePath);
+            if (imageFile.exists()) {
+                Image image = new Image(imageFile.toURI().toString());
+                imageView.setImage(image);
+                return;
+            }
+            } catch (Exception e) {
+                System.err.println("erreur charger une image");
+            }
+        }
+
+        try{
+            Image defaultImages = new Image(getClass().getResourceAsStream(defaultImage));
+            imageView.setImage(defaultImages);
+        } catch (Exception e) {
+            System.err.println("erreur charger une image");
+        }
+    }
+
+    private void loadTexturePack() {
+        textures = new ArrayList<>();
+        textures.add(new Texture("defaut", "/image/defaut/"));
+        textures.add(new Texture("fanf", "/image/fnaf/"));
+        texturePackComboBox.setItems(FXCollections.observableArrayList(textures));
+
+        Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());
+        String textureName = TexturePref.get(TEXTURE_PACK_KEY, "defaut");
+
+        for(Texture texture : textures) {
+            if(texture.getNom().equals(textureName)) {
+                texturePackComboBox.getSelectionModel().select(texture);
+                System.out.println("1" + texture.getNom());
+                break;
+            }
+        }
+    }
+
+    @FXML
+    private void sauvegarderTexturePack() {
+        Texture selectedTexture = texturePackComboBox.getSelectionModel().getSelectedItem();
+        if(selectedTexture != null) {
+            Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());
+            TexturePref.put(TEXTURE_PACK_KEY, selectedTexture.getNom());
+        }
+    }
+
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -213,32 +285,11 @@ public class AvatarController implements Initializable {
         loadImage(avatarImageView3, IMAGE_PATH_KEY3, DEFAULT_IMAGE_3);
         loadImage(avatarImageView4, IMAGE_PATH_KEY4, DEFAULT_IMAGE_4);
 
+        //changer de Texture
+        loadTexturePack();
+
     }
-
-    private void loadImage(ImageView imageView, String key, String defaultImage) {
-        Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
-        String imagePath = ImagePref.get(key, null);
-        if (imagePath != null) {
-            try {
-                Image Saveimage = new Image(new File(imagePath).toURI().toString());
-                imageView.setImage(Saveimage);
-            } catch (Exception e) {
-                System.err.println("erreur chargement d'image");
-            }
-        }
-        try {
-            Image defaultImages = new Image(getClass().getResourceAsStream(defaultImage));
-            imageView.setImage(defaultImages);
-        } catch (Exception e) {
-            // Si l'image spécifique n'existe pas, utiliser l'image de fallback
-            try {
-                Image defaultImages = new Image(getClass().getResourceAsStream(defaultImage));
-                imageView.setImage(defaultImages);
-            } catch (Exception i) {
-                System.err.println("Impossible de charger l'image par défaut " + defaultImage + " : " + e.getMessage());
-            }
-        }
-    }
-
-
 }
+
+
+

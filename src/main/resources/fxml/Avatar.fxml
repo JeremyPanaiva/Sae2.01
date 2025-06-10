@@ -6,20 +6,29 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" styleClass="game-container" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bomberman.controller.AvatarController">
-    <Button onAction="#closeButtonAction" styleClass="Close"  AnchorPane.topAnchor="10.0" AnchorPane.rightAnchor="10.0">
+    <Button onAction="#closeButtonAction" styleClass="Close" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
         <cursor>
             <Cursor fx:constant="HAND" />
         </cursor>
     </Button>
-    <VBox  styleClass="Avatar" >
-        <HBox spacing="150">
+
+    <ComboBox fx:id="texturePackComboBox" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="30">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor></ComboBox>
+    <Button fx:id="savegarderTexture" styleClass="sauvegarderTexture" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10" onAction="#sauvegarderTexturePack">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor></Button>
+    <VBox styleClass="Avatar">
+        <HBox spacing="80">
 
             <VBox styleClass="Avatar-container1">
                 <HBox styleClass="image-container">
                     <ImageView fx:id="avatarImageView1" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
                         <Image url="@../image/Avatar1.png" />
                     </ImageView>
-                    <Button fx:id="choisirImage1" onAction="#changerImage1" styleClass="sauvegardeImage" >
+                    <Button fx:id="choisirImage1" onAction="#changerImage1" styleClass="sauvegardeImage">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
@@ -27,7 +36,7 @@
                 </HBox>
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo1" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 1" styleClass="speudo" />
-                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos" >
+                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
                         <cursor>
                     <Cursor fx:constant="HAND" />
                         </cursor>
@@ -42,7 +51,7 @@
                     <ImageView fx:id="avatarImageView2" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
                         <Image url="@../image/Avatar2.png" />
                     </ImageView>
-                    <Button fx:id="choisirImage2" onAction="#changerImage2" styleClass="sauvegardeImage" >
+                    <Button fx:id="choisirImage2" onAction="#changerImage2" styleClass="sauvegardeImage">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
@@ -50,7 +59,7 @@
                 </HBox>
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo2" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 2" styleClass="speudo" />
-                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos" >
+                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
@@ -61,13 +70,13 @@
             </VBox>
         </HBox>
 
-        <HBox spacing="150">
+        <HBox spacing="80">
             <VBox styleClass="Avatar-container1">
                 <HBox styleClass="image-container">
                     <ImageView fx:id="avatarImageView3" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
-                        <Image url="@../image/background.png" />
+                        <Image url="@../image/Avatar3.png" />
                     </ImageView>
-                    <Button fx:id="choisirImage3" onAction="#changerImage3" styleClass="sauvegardeImage" >
+                    <Button fx:id="choisirImage3" onAction="#changerImage3" styleClass="sauvegardeImage">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
@@ -75,7 +84,7 @@
                 </HBox>
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo3" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 1" styleClass="speudo" />
-                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos" >
+                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
@@ -88,9 +97,9 @@
             <VBox styleClass="Avatar-container1">
                 <HBox styleClass="image-container">
                     <ImageView fx:id="avatarImageView4" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image">
-                        <Image url="@../image/background.png" />
+                        <Image url="@../image/Avatar4.png" />
                     </ImageView>
-                    <Button fx:id="choisirImage4" onAction="#changerImage4" styleClass="sauvegardeImage" >
+                    <Button fx:id="choisirImage4" onAction="#changerImage4" styleClass="sauvegardeImage">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
@@ -98,7 +107,7 @@
                 </HBox>
                 <HBox styleClass="speudo-container">
                     <TextField fx:id="speudo4" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 1" styleClass="speudo" />
-                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos" >
+                    <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
