@@ -25,41 +25,46 @@ import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+/**
+ * Contrôleur principal du jeu Bomberman.
+ * Gère l'interface graphique, la boucle de jeu, les entrées clavier,
+ * la gestion des joueurs humains et bots, ainsi que la mise à jour de la vue.
+ */
 public class GameController implements Initializable {
 
-    /** Conteneur principal de l'interface graphique. */
+    /** Conteneur principal de l'interface graphique défini dans le FXML. */
     @FXML
     private VBox root;
 
-    /** Canvas pour dessiner le jeu. */
+    /** Canvas sur lequel le jeu est dessiné. */
     @FXML
     private Canvas gameCanvas;
 
-    /** Zone de texte affichant le statut du jeu (victoire, nombre de joueurs, etc). */
+    /** Zone de texte affichant les informations sur le statut du jeu (victoire, nombre de joueurs, etc.). */
     @FXML
     private Text statusText;
 
-    /** Instance du modèle de jeu contenant la logique métier. */
+    /** Modèle du jeu contenant toute la logique métier et les états du jeu. */
     private Game game;
 
-    /** Vue graphique permettant de rendre le jeu sur le canvas. */
+    /** Vue graphique qui rend le modèle sur le canvas. */
     private GameView gameView;
 
-    /** Boucle d'animation gérant la mise à jour du jeu à ~60 FPS. */
+    /** Boucle d'animation qui met à jour le jeu à environ 60 images par seconde. */
     private AnimationTimer gameLoop;
 
-    /** Ensemble des touches actuellement pressées. */
+    /** Ensemble des touches actuellement pressées par l'utilisateur. */
     private Set<KeyCode> pressedKeys;
 
-    /** Ensemble des touches pressées à traiter une seule fois (pour éviter répétition continue). */
+    /** Ensemble des touches pressées à traiter une seule fois pour éviter les répétitions. */
     private Set<KeyCode> processedKeys;
 
-    /** Nombre de joueurs humains dans la partie. Par défaut 2. */
+    /** Nombre de joueurs humains dans la partie, par défaut 2. */
     private int humanPlayerCount = 2;
 
     /**
-     * Tableau des contrôles clavier pour chaque joueur humain.
-     * Chaque joueur a 5 touches : Haut, Bas, Gauche, Droite, Poser bombe.
+     * Tableau des touches clavier pour chaque joueur humain.
+     * Chaque sous-tableau contient 5 touches : Haut, Bas, Gauche, Droite, Poser une bombe.
      */
     private static final KeyCode[][] PLAYER_CONTROLS = {
             {KeyCode.Z, KeyCode.S, KeyCode.Q, KeyCode.D, KeyCode.A},            // Joueur 1 : ZQSD + A
@@ -69,24 +74,24 @@ public class GameController implements Initializable {
     };
 
     /**
-     * Initialisation automatique appelée après chargement du FXML.
-     * Initialise les collections de touches et lance la création du jeu.
+     * Méthode d'initialisation automatique appelée après le chargement du fichier FXML.
+     * Initialise les collections de touches pressées et démarre la création du jeu avec le nombre par défaut de joueurs humains.
      *
-     * @param location URL de localisation (non utilisé ici).
-     * @param resources Ressources locales (non utilisées ici).
+     * @param location  URL de localisation (non utilisé ici).
+     * @param resources Ressources localisées (non utilisées ici).
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         pressedKeys = new HashSet<>();
         processedKeys = new HashSet<>();
 
-        // Initialisation du jeu avec le nombre par défaut de joueurs humains.
+        // Initialise la partie avec le nombre défini de joueurs humains.
         setHumanPlayerCount(humanPlayerCount);
         System.out.println("GameController initialized");
     }
 
     /**
-     * Modifie le nombre de joueurs humains dans la partie et réinitialise le jeu.
+     * Définit le nombre de joueurs humains dans la partie, puis initialise la partie avec ce paramètre.
      *
      * @param humanPlayers Nombre de joueurs humains souhaité.
      */
@@ -97,21 +102,23 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Initialise les objets du jeu : modèle, vue, boucle de jeu, et gestion des événements clavier.
+     * Initialise le jeu en créant le modèle, la vue, la boucle d'animation, et la gestion des événements clavier.
+     * Affiche en console des informations sur les types de joueurs (Humain ou Bot).
      */
     private void initializeGame() {
-        // Création d'une nouvelle instance du jeu avec 4 joueurs dont humanPlayerCount humains.
+        // Initialise le modèle avec 4 joueurs dont humanPlayerCount humains
         game = new Game(4, humanPlayerCount);
         gameView = new GameView(gameCanvas);
 
         initializeGameLoop();
         setupKeyHandlers();
 
-        // Demande le focus clavier sur le conteneur principal pour recevoir les événements clavier.
+        // Donne le focus clavier au conteneur racine pour capter les événements clavier
         root.requestFocus();
 
         System.out.println("Game initialized with " + humanPlayerCount + " human players");
-        // Affiche en console le type de chaque joueur (Bot ou Humain)
+
+        // Affiche le type de chaque joueur dans la console
         for (int i = 0; i < game.getPlayers().size(); i++) {
             Player player = game.getPlayer(i);
             if (player != null) {
@@ -123,8 +130,8 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Crée et démarre la boucle d'animation (gameLoop) pour mettre à jour le jeu à environ 60 FPS.
-     * Dans chaque cycle : traite les entrées, déplace les bots, met à jour le modèle, rend la vue, et met à jour le statut.
+     * Initialise et démarre la boucle d'animation qui met à jour le jeu à environ 60 FPS.
+     * À chaque frame, elle traite les entrées clavier, déplace les bots, met à jour le modèle, redessine la vue et actualise le statut.
      */
     private void initializeGameLoop() {
         gameLoop = new AnimationTimer() {
@@ -132,7 +139,7 @@ public class GameController implements Initializable {
 
             @Override
             public void handle(long now) {
-                // Environ 16.67ms entre chaque frame (60 FPS)
+                // Frame toutes les ~16.67 ms (60 FPS)
                 if (now - lastUpdate >= 16_666_667) {
                     handleInput();
                     handleBots();
@@ -147,8 +154,8 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Configure les gestionnaires d'événements clavier sur le conteneur racine (root).
-     * Permet de détecter les pressions et relâchements de touches.
+     * Configure les gestionnaires d'événements clavier sur le conteneur principal.
+     * Permet la détection des touches pressées et relâchées.
      */
     private void setupKeyHandlers() {
         root.setOnKeyPressed(this::onKeyPressed);
@@ -157,21 +164,21 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Méthode appelée lorsqu'une touche est pressée.
-     * Ajoute la touche aux ensembles de touches pressées et traite les commandes spéciales (R pour reset, ESC pour menu).
+     * Gestionnaire d'événement appelé lors de la pression d'une touche clavier.
+     * Ajoute la touche aux ensembles des touches pressées et traite les commandes spéciales (R pour reset, ESC pour revenir au menu).
      *
-     * @param event Événement clavier KeyEvent.
+     * @param event Événement clavier.
      */
     private void onKeyPressed(KeyEvent event) {
         KeyCode key = event.getCode();
 
-        // Si la touche n'était pas déjà pressée, on l'ajoute aux ensembles.
+        // Ajout aux ensembles seulement si la touche n'est pas déjà présente
         if (!pressedKeys.contains(key)) {
             pressedKeys.add(key);
             processedKeys.add(key);
         }
 
-        // Redémarrer la partie si la touche R est pressée
+        // Redémarre la partie si R est pressée
         if (key == KeyCode.R) {
             game.resetGame(humanPlayerCount);
         }
@@ -183,10 +190,10 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Méthode appelée lorsqu'une touche est relâchée.
+     * Gestionnaire d'événement appelé lors du relâchement d'une touche clavier.
      * Retire la touche des ensembles de touches pressées et traitées.
      *
-     * @param event Événement clavier KeyEvent.
+     * @param event Événement clavier.
      */
     private void onKeyReleased(KeyEvent event) {
         KeyCode key = event.getCode();
@@ -196,8 +203,9 @@ public class GameController implements Initializable {
 
     /**
      * Traite les entrées clavier des joueurs humains.
-     * Pour chaque joueur humain, déplace le joueur ou place une bombe si une touche correspondante vient d'être pressée.
-     * Les touches sont consommées pour ne pas être traitées plusieurs fois.
+     * Pour chaque joueur humain, déplace le joueur dans la direction correspondant à la touche pressée,
+     * ou place une bombe si la touche dédiée est détectée.
+     * Les touches sont consommées une seule fois pour éviter le traitement répétitif continu.
      */
     private void handleInput() {
         if (!game.isGameRunning()) return;
@@ -205,7 +213,7 @@ public class GameController implements Initializable {
         for (int playerId = 0; playerId < humanPlayerCount && playerId < PLAYER_CONTROLS.length; playerId++) {
             Player player = game.getPlayer(playerId);
 
-            // Ignorer si joueur null ou bot
+            // Ignore les bots ou joueurs null
             if (player == null || player instanceof BotPlayer) {
                 System.out.println("Skipping player " + playerId + " - is bot or null");
                 continue;
@@ -213,7 +221,7 @@ public class GameController implements Initializable {
 
             KeyCode[] controls = PLAYER_CONTROLS[playerId];
 
-            // Gestion des déplacements (haut, bas, gauche, droite)
+            // Déplacements
             if (processedKeys.contains(controls[0])) {
                 game.movePlayer(playerId, Direction.UP);
                 processedKeys.remove(controls[0]);
@@ -240,7 +248,8 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Demande à chaque bot de décider de son mouvement et d'éventuellement poser une bombe.
+     * Demande à chaque bot de décider de son mouvement et de poser une bombe si nécessaire.
+     * Appelé à chaque frame de la boucle de jeu.
      */
     private void handleBots() {
         if (!game.isGameRunning()) return;
@@ -259,8 +268,8 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Met à jour le texte de statut affiché à l'écran.
-     * Affiche soit le gagnant, soit le nombre de joueurs vivants et les contrôles clavier.
+     * Met à jour le texte du statut affiché à l'écran.
+     * Affiche le gagnant si la partie est terminée, sinon le nombre de joueurs vivants et les contrôles.
      */
     private void updateStatus() {
         if (!game.isGameRunning()) {
@@ -295,8 +304,8 @@ public class GameController implements Initializable {
     }
 
     /**
-     * Quitte la partie en cours et revient au menu principal.
-     * Stoppe la boucle de jeu et charge la scène du menu principal.
+     * Interrompt la partie en cours et revient au menu principal.
+     * Arrête la boucle d'animation et charge la scène du menu principal.
      */
     private void returnToMainMenu() {
         if (gameLoop != null) {
@@ -304,22 +313,14 @@ public class GameController implements Initializable {
         }
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
-            Parent rootParent = loader.load();
-            Scene scene = new Scene(rootParent, 800, 600);
-            scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
-
-            Stage stage = (Stage) root.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setResizable(false);
-
-            // Demander le focus clavier pour la nouvelle scène
-            scene.getRoot().requestFocus();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/MainMenu.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) this.root.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Menu Principal - Bomberman");
+            stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }
-
-
