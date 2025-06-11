@@ -83,7 +83,7 @@
                     </Button>
                 </HBox>
                 <HBox styleClass="speudo-container">
-                    <TextField fx:id="speudo3" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 1" styleClass="speudo" />
+                    <TextField fx:id="speudo3" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 3" styleClass="speudo" />
                     <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
                         <cursor>
                             <Cursor fx:constant="HAND" />
@@ -106,7 +106,7 @@
                     </Button>
                 </HBox>
                 <HBox styleClass="speudo-container">
-                    <TextField fx:id="speudo4" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 1" styleClass="speudo" />
+                    <TextField fx:id="speudo4" prefHeight="25.0" prefWidth="44.0" promptText="Pseudo du Personnage 4" styleClass="speudo" />
                     <Button onAction="#savePseudos" prefHeight="25.0" prefWidth="132.0" styleClass="sauvegardeSpeudo" text="Enregistrer les Pseudos">
                         <cursor>
                             <Cursor fx:constant="HAND" />

@@ -10,7 +10,6 @@
     -fx-font-weight: bold;
     -fx-font-size: 50px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 3, 0, 2, 2);
-    -fx-padding: 50 0 0 0;
 }
 
 .game-canvas {
