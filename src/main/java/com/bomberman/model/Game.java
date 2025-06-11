@@ -14,14 +14,24 @@ import javafx.util.Duration;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Représente le jeu Bomberman.
+ * Gère le plateau de jeu, les joueurs, et les règles du jeu.
+ */
 public class Game {
-    private GameBoard board;
-    private List<Player> players;
-    private boolean gameRunning;
-    private Player winner;
-    private Stage primaryStage;
-    private int humanPlayerCount; // Nouveau champ pour stocker le nombre de joueurs humains
+    private GameBoard board; // Le plateau de jeu
+    private List<Player> players; // Liste des joueurs
+    private boolean gameRunning; // Indique si le jeu est en cours
+    private Player winner; // Le joueur gagnant
+    private Stage primaryStage; // La scène principale du jeu
+    private int humanPlayerCount; // Nombre de joueurs humains
 
+    /**
+     * Constructeur pour initialiser un nouveau jeu.
+     *
+     * @param totalPlayers Le nombre total de joueurs.
+     * @param humanPlayers Le nombre de joueurs humains.
+     */
     public Game(int totalPlayers, int humanPlayers) {
         this.humanPlayerCount = humanPlayers;
         board = new GameBoard();
@@ -30,19 +40,29 @@ public class Game {
         winner = null;
 
         initializePlayers(totalPlayers, humanPlayers);
-        
+
         // Incrémenter les compteurs de matchs
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY3);
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY4);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY3);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY4);
     }
 
-    // Constructeur de compatibilité (pour l'ancien code)
+    /**
+     * Constructeur de compatibilité pour l'ancien code.
+     *
+     * @param numPlayers Le nombre total de joueurs, tous humains par défaut.
+     */
     public Game(int numPlayers) {
         this(numPlayers, numPlayers); // Tous les joueurs sont humains par défaut
     }
 
+    /**
+     * Initialise les joueurs pour le jeu.
+     *
+     * @param totalPlayers Le nombre total de joueurs.
+     * @param humanPlayers Le nombre de joueurs humains.
+     */
     private void initializePlayers(int totalPlayers, int humanPlayers) {
         Position[] startPositions = {
                 new Position(1, 1),
@@ -65,11 +85,23 @@ public class Game {
         }
     }
 
+    /**
+     * Constructeur pour initialiser un nouveau jeu avec une scène principale.
+     *
+     * @param numPlayers Le nombre total de joueurs.
+     * @param stage La scène principale du jeu.
+     */
     public Game(int numPlayers, Stage stage) {
         this(numPlayers);
         this.primaryStage = stage;
     }
 
+    /**
+     * Déplace un joueur dans une direction donnée.
+     *
+     * @param playerId L'identifiant du joueur.
+     * @param direction La direction dans laquelle déplacer le joueur.
+     */
     public void movePlayer(int playerId, Direction direction) {
         if (!gameRunning) return;
 
@@ -82,6 +114,11 @@ public class Game {
         }
     }
 
+    /**
+     * Place une bombe pour un joueur donné.
+     *
+     * @param playerId L'identifiant du joueur.
+     */
     public void placeBomb(int playerId) {
         if (!gameRunning) return;
 
@@ -95,6 +132,9 @@ public class Game {
         }
     }
 
+    /**
+     * Met à jour l'état du jeu.
+     */
     public void update() {
         if (!gameRunning) return;
 
@@ -121,12 +161,17 @@ public class Game {
         checkWinCondition();
     }
 
+    /**
+     * Fait exploser une bombe et gère les conséquences.
+     *
+     * @param bomb La bombe à faire exploser.
+     */
     private void explodeBomb(Bomb bomb) {
         board.removeBomb(bomb.getPosition());
         bomb.getOwner().bombExploded();
 
         List<Position> explosionPositions = calculateExplosionPositions(bomb);
-        // Passer la position centrale de la bombe pour categoriser les explosions
+        // Passer la position centrale de la bombe pour catégoriser les explosions
         board.addExplosion(new Explosion(explosionPositions, bomb.getPosition()));
 
         // Détruire les murs destructibles
@@ -137,6 +182,12 @@ public class Game {
         }
     }
 
+    /**
+     * Calcule les positions affectées par l'explosion d'une bombe.
+     *
+     * @param bomb La bombe.
+     * @return La liste des positions affectées par l'explosion.
+     */
     private List<Position> calculateExplosionPositions(Bomb bomb) {
         List<Position> positions = new ArrayList<>();
         Position center = bomb.getPosition();
@@ -162,6 +213,11 @@ public class Game {
         return positions;
     }
 
+    /**
+     * Vérifie si un joueur a collecté un bonus.
+     *
+     * @param player Le joueur à vérifier.
+     */
     private void checkPowerUpCollection(Player player) {
         PowerUp powerUp = board.getPowerUp(player.getPosition());
         if (powerUp != null) {
@@ -169,6 +225,9 @@ public class Game {
         }
     }
 
+    /**
+     * Vérifie si des joueurs sont morts dans les explosions.
+     */
     private void checkPlayerDeaths() {
         for (Player player : players) {
             if (player.isAlive()) {
@@ -182,6 +241,9 @@ public class Game {
         }
     }
 
+    /**
+     * Vérifie les conditions de victoire.
+     */
     private void checkWinCondition() {
         List<Player> alivePlayers = players.stream()
                 .filter(Player::isAlive)
@@ -191,12 +253,15 @@ public class Game {
             gameRunning = false;
             if (alivePlayers.size() == 1) {
                 winner = alivePlayers.get(0);
-                System.out.println("Winner is " + winner.getId());
-                com.bomberman.controller.AvatarController.incrementNbMatchGagner(winner.getId());
+                System.out.println("Le gagnant est le joueur " + winner.getId());
+                AvatarController.incrementNbMatchGagner(winner.getId());
             }
         }
     }
 
+    /**
+     * Retourne au menu principal.
+     */
     private void returnToMainMenu() {
         if (primaryStage != null) {
             try {
@@ -208,7 +273,7 @@ public class Game {
                 primaryStage.setScene(scene);
                 primaryStage.setResizable(false);
 
-                // Focus sur la scene pour les événements clavier
+                // Focus sur la scène pour les événements clavier
                 scene.getRoot().requestFocus();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -216,10 +281,18 @@ public class Game {
         }
     }
 
+    /**
+     * Réinitialise le jeu.
+     */
     public void resetGame() {
         resetGame(this.humanPlayerCount);
     }
 
+    /**
+     * Réinitialise le jeu avec un nombre spécifique de joueurs humains.
+     *
+     * @param humanPlayers Le nombre de joueurs humains.
+     */
     public void resetGame(int humanPlayers) {
         this.humanPlayerCount = humanPlayers;
         board = new GameBoard();
@@ -231,21 +304,72 @@ public class Game {
         initializePlayers(4, humanPlayers); // Toujours 4 joueurs au total
 
         // Incrémenter les compteurs de matchs
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY3);
-        com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY4);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY3);
+        AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY4);
     }
 
-    // Getters
-    public GameBoard getBoard() { return board; }
-    public List<Player> getPlayers() { return new ArrayList<>(players); }
-    public boolean isGameRunning() { return gameRunning; }
-    public Player getWinner() { return winner; }
-    public void setPrimaryStage(Stage stage) { this.primaryStage = stage; }
-    public int getHumanPlayerCount() { return humanPlayerCount; }
+    /**
+     * Retourne le plateau de jeu.
+     *
+     * @return Le plateau de jeu.
+     */
+    public GameBoard getBoard() {
+        return board;
+    }
 
-    // Méthode corrigée pour obtenir un joueur par son ID
+    /**
+     * Retourne la liste des joueurs.
+     *
+     * @return La liste des joueurs.
+     */
+    public List<Player> getPlayers() {
+        return new ArrayList<>(players);
+    }
+
+    /**
+     * Vérifie si le jeu est en cours.
+     *
+     * @return true si le jeu est en cours, false sinon.
+     */
+    public boolean isGameRunning() {
+        return gameRunning;
+    }
+
+    /**
+     * Retourne le joueur gagnant.
+     *
+     * @return Le joueur gagnant.
+     */
+    public Player getWinner() {
+        return winner;
+    }
+
+    /**
+     * Définit la scène principale du jeu.
+     *
+     * @param stage La scène principale.
+     */
+    public void setPrimaryStage(Stage stage) {
+        this.primaryStage = stage;
+    }
+
+    /**
+     * Retourne le nombre de joueurs humains.
+     *
+     * @return Le nombre de joueurs humains.
+     */
+    public int getHumanPlayerCount() {
+        return humanPlayerCount;
+    }
+
+    /**
+     * Retourne un joueur par son identifiant.
+     *
+     * @param playerId L'identifiant du joueur.
+     * @return Le joueur correspondant à l'identifiant.
+     */
     public Player getPlayer(int playerId) {
         if (playerId >= 0 && playerId < players.size()) {
             return players.get(playerId);
@@ -253,9 +377,12 @@ public class Game {
         return null;
     }
 
-    // Méthode pour obtenir le nombre total de joueurs
+    /**
+     * Retourne le nombre total de joueurs.
+     *
+     * @return Le nombre total de joueurs.
+     */
     public int getTotalPlayerCount() {
         return players.size();
     }
 }
-

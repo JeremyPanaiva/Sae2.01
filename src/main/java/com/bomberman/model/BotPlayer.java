@@ -2,15 +2,27 @@ package com.bomberman.model;
 
 import com.bomberman.util.Direction;
 import com.bomberman.util.Position;
+
 import java.util.*;
 
+/**
+ * Représente un joueur contrôlé par l'ordinateur dans le jeu Bomberman.
+ * Le bot prend des décisions automatiques pour se déplacer et poser des bombes.
+ */
 public class BotPlayer extends Player {
-    private Random random;
-    private long lastActionTime;
-    private long lastBombTime;
-    private static final long ACTION_DELAY = 120;
-    private static final long BOMB_INTERVAL = 10000; // 10 secondes
+    private Random random; // Générateur de nombres aléatoires pour les mouvements
+    private long lastActionTime; // Dernière fois que le bot a effectué une action
+    private long lastBombTime; // Dernière fois que le bot a posé une bombe
+    private static final long ACTION_DELAY = 120; // Délai entre les actions du bot
+    private static final long BOMB_INTERVAL = 10000; // Intervalle de pose de bombe en millisecondes
 
+    /**
+     * Constructeur pour créer un nouveau joueur bot.
+     *
+     * @param id L'identifiant du joueur.
+     * @param position La position initiale du joueur.
+     * @param color La couleur du joueur.
+     */
     public BotPlayer(int id, Position position, String color) {
         super(id, position, color);
         this.random = new Random();
@@ -18,6 +30,12 @@ public class BotPlayer extends Player {
         this.lastBombTime = 0;
     }
 
+    /**
+     * Effectue un mouvement pour le bot en fonction de l'état du plateau de jeu.
+     *
+     * @param board Le plateau de jeu actuel.
+     * @param allPlayers La liste de tous les joueurs.
+     */
     public void makeMove(GameBoard board, List<Player> allPlayers) {
         if (!isAlive()) return;
 
@@ -27,7 +45,7 @@ public class BotPlayer extends Player {
 
         Position myPos = getPosition();
 
-        // PRIORITÉ ABSOLUE : Survivre aux explosions
+        // Priorité absolue : survivre aux explosions
         if (isInImmediateDanger(board, myPos)) {
             Direction escapeDir = findBestEscapeRoute(board, myPos);
             if (escapeDir != null) {
@@ -40,6 +58,11 @@ public class BotPlayer extends Player {
         moveRandomly(board);
     }
 
+    /**
+     * Déplace le bot de manière aléatoire sur le plateau.
+     *
+     * @param board Le plateau de jeu actuel.
+     */
     private void moveRandomly(GameBoard board) {
         Position myPos = getPosition();
         List<Direction> possibleDirections = new ArrayList<>();
@@ -59,8 +82,15 @@ public class BotPlayer extends Player {
         }
     }
 
-    // === MÉTHODES D'ESQUIVE (gardées du code original) ===
+    // Méthodes d'esquive
 
+    /**
+     * Vérifie si le bot est en danger immédiat d'une explosion.
+     *
+     * @param board Le plateau de jeu.
+     * @param pos La position actuelle du bot.
+     * @return true si le bot est en danger immédiat, false sinon.
+     */
     private boolean isInImmediateDanger(GameBoard board, Position pos) {
         // Explosions actuelles
         for (Explosion explosion : board.getExplosions()) {
@@ -77,6 +107,13 @@ public class BotPlayer extends Player {
         return false;
     }
 
+    /**
+     * Trouve la meilleure direction pour échapper au danger.
+     *
+     * @param board Le plateau de jeu.
+     * @param pos La position actuelle du bot.
+     * @return La direction optimale pour échapper au danger.
+     */
     private Direction findBestEscapeRoute(GameBoard board, Position pos) {
         Map<Direction, Integer> escapeScores = new HashMap<>();
 
@@ -94,6 +131,13 @@ public class BotPlayer extends Player {
                 .orElse(null);
     }
 
+    /**
+     * Calcule un score pour une position d'échappement potentielle.
+     *
+     * @param board Le plateau de jeu.
+     * @param pos La position à évaluer.
+     * @return Le score de la position.
+     */
     private int calculateEscapeScore(GameBoard board, Position pos) {
         int score = 100;
 
@@ -116,6 +160,14 @@ public class BotPlayer extends Player {
         return score;
     }
 
+    /**
+     * Vérifie si une position est dans la zone d'explosion d'une bombe.
+     *
+     * @param pos La position à vérifier.
+     * @param bomb La bombe à considérer.
+     * @param board Le plateau de jeu.
+     * @return true si la position est dans la zone d'explosion, false sinon.
+     */
     private boolean isInBombBlastZone(Position pos, Bomb bomb, GameBoard board) {
         Position bombPos = bomb.getPosition();
         if (pos.equals(bombPos)) return true;
@@ -134,10 +186,24 @@ public class BotPlayer extends Player {
         return false;
     }
 
+    /**
+     * Vérifie si un mouvement vers une position est sûr.
+     *
+     * @param board Le plateau de jeu.
+     * @param pos La position à vérifier.
+     * @return true si le mouvement est sûr, false sinon.
+     */
     private boolean isSafeMove(GameBoard board, Position pos) {
         return board.canMoveTo(pos) && !isInImmediateDanger(board, pos);
     }
 
+    /**
+     * Vérifie si le bot peut s'échapper après avoir posé une bombe à une position donnée.
+     *
+     * @param board Le plateau de jeu.
+     * @param bombPos La position de la bombe.
+     * @return true si le bot peut s'échapper, false sinon.
+     */
     private boolean canEscapeAfterBombAt(GameBoard board, Position bombPos) {
         for (Direction dir : Direction.values()) {
             Position escapePos = bombPos.getNeighbor(dir);
@@ -148,6 +214,13 @@ public class BotPlayer extends Player {
         return false;
     }
 
+    /**
+     * Vérifie si une position serait dans la zone d'explosion d'une bombe.
+     *
+     * @param pos La position à vérifier.
+     * @param bombPos La position de la bombe.
+     * @return true si la position serait dans la zone d'explosion, false sinon.
+     */
     private boolean wouldBeInBlastZone(Position pos, Position bombPos) {
         if (pos.equals(bombPos)) return true;
 
@@ -163,7 +236,13 @@ public class BotPlayer extends Player {
         return false;
     }
 
-    // === LOGIQUE DE POSE DE BOMBES ===
+    /**
+     * Détermine si le bot veut poser une bombe.
+     *
+     * @param board Le plateau de jeu.
+     * @param allPlayers La liste de tous les joueurs.
+     * @return true si le bot veut poser une bombe, false sinon.
+     */
     public boolean wantsToPlaceBomb(GameBoard board, List<Player> allPlayers) {
         if (!canPlaceBomb()) return false;
 
@@ -193,5 +272,4 @@ public class BotPlayer extends Player {
 
         return false;
     }
-
 }

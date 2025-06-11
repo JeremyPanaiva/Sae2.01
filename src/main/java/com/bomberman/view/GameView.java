@@ -14,50 +14,64 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+/**
+ * Classe responsable de l'affichage du jeu Bomberman.
+ * Gère le rendu graphique du jeu, y compris les joueurs, les murs, les bombes, les explosions et les bonus.
+ */
 public class GameView {
-    private Canvas canvas;
-    private GraphicsContext gc;
-    private Map<Integer, Image> PlayerImage;
-    private Image wallImages;
-    private Image wallDestructible;
-    private Image bomb;
-    private Map<Explosion.ExplosionType, Image> explosionImages;
-    private Map<PowerUp.Type, Image> bonusImages;
-    private Texture texture;
+    private Canvas canvas; // Le canevas sur lequel le jeu est dessiné
+    private GraphicsContext gc; // Le contexte graphique pour dessiner sur le canevas
+    private Map<Integer, Image> PlayerImage; // Images des joueurs
+    private Image wallImages; // Image des murs indestructibles
+    private Image wallDestructible; // Image des murs destructibles
+    private Image bomb; // Image des bombes
+    private Map<Explosion.ExplosionType, Image> explosionImages; // Images des explosions
+    private Map<PowerUp.Type, Image> bonusImages; // Images des bonus
+    private Texture texture; // Pack de textures utilisé
 
+    /**
+     * Constructeur pour initialiser la vue du jeu.
+     *
+     * @param canvas Le canevas sur lequel le jeu sera dessiné.
+     */
     public GameView(Canvas canvas) {
         this.canvas = canvas;
         this.gc = canvas.getGraphicsContext2D();
 
-        // Définir la taille du canvas
+        // Définir la taille du canevas
         canvas.setWidth(GameConstants.BOARD_WIDTH * GameConstants.CELL_SIZE);
         canvas.setHeight(GameConstants.BOARD_HEIGHT * GameConstants.CELL_SIZE);
 
-        //pack de texture
+        // Charger le pack de textures
         loadSelectTexturePack();
         loadAllImage();
     }
 
+    /**
+     * Charge le pack de textures sélectionné à partir des préférences utilisateur.
+     */
     private void loadSelectTexturePack() {
         Preferences texturePrefs = Preferences.userRoot().node(AvatarController.class.getName());
         String textureName = texturePrefs.get(AvatarController.TEXTURE_PACK_KEY, "defaut");
-        System.out.println("Texture name loaded from preferences: " + textureName);
+        System.out.println("Nom de la texture chargée depuis les préférences : " + textureName);
 
         if ("defaut".equals(textureName)) {
             this.texture = new Texture("defaut", "/image/defaut/");
-            System.out.println("Using default texture pack");
+            System.out.println("Utilisation du pack de textures par défaut");
         } else if ("mario".equals(textureName)) {
             this.texture = new Texture("mario", "/image/mario/");
-            System.out.println("Using mario texture pack");
+            System.out.println("Utilisation du pack de textures Mario");
         } else {
             this.texture = new Texture("defaut", "/image/defaut/");
-            System.out.println("Unknown texture, falling back to default: " + textureName);
+            System.out.println("Texture inconnue, retour au pack de textures par défaut : " + textureName);
         }
 
-        System.out.println("Final texture path: " + this.texture.getPath());
+        System.out.println("Chemin final de la texture : " + this.texture.getPath());
     }
 
-
+    /**
+     * Charge toutes les images nécessaires pour le jeu.
+     */
     private void loadAllImage() {
         loadPlayerImage();
         loadWallImage();
@@ -66,6 +80,9 @@ public class GameView {
         loadBonus();
     }
 
+    /**
+     * Charge les images des joueurs.
+     */
     private void loadPlayerImage() {
         PlayerImage = new HashMap<>();
         try {
@@ -73,11 +90,14 @@ public class GameView {
             PlayerImage.put(1, new Image(getClass().getResourceAsStream(texture.getPath() + "player2.png")));
             PlayerImage.put(2, new Image(getClass().getResourceAsStream(texture.getPath() + "player3.png")));
             PlayerImage.put(3, new Image(getClass().getResourceAsStream(texture.getPath() + "player4.png")));
-        }catch (Exception e) {
-            System.err.println("Error loading player image");
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des images des joueurs");
         }
     }
 
+    /**
+     * Charge les images des murs.
+     */
     private void loadWallImage() {
         try {
             wallImages = new Image(getClass().getResourceAsStream(texture.getPath() + "wall.png"));
@@ -87,14 +107,20 @@ public class GameView {
         }
     }
 
+    /**
+     * Charge l'image des bombes.
+     */
     private void loadbombImage() {
-        try{
+        try {
             bomb = new Image(getClass().getResourceAsStream(texture.getPath() + "bomb.png"));
-        }catch (Exception e) {
-            System.err.println("Erreur image bomb");
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image de la bombe");
         }
     }
 
+    /**
+     * Charge les images des explosions.
+     */
     private void loadExplosionImages() {
         explosionImages = new HashMap<>();
         try {
@@ -103,7 +129,7 @@ public class GameView {
             explosionImages.put(Explosion.ExplosionType.VERTICAL,
                     new Image(getClass().getResourceAsStream(texture.getPath() + "explosion_horizontal.png")));
             explosionImages.put(Explosion.ExplosionType.HORIZONTAL,
-                    new Image(getClass().getResourceAsStream(texture.getPath() +"explosion_vertical.png")));
+                    new Image(getClass().getResourceAsStream(texture.getPath() + "explosion_vertical.png")));
             explosionImages.put(Explosion.ExplosionType.END,
                     new Image(getClass().getResourceAsStream(texture.getPath() + "explosion_end.png")));
         } catch (Exception e) {
@@ -111,9 +137,11 @@ public class GameView {
         }
     }
 
+    /**
+     * Charge les images des bonus.
+     */
     private void loadBonus() {
-        bonusImages = new HashMap<>(); // Initialisation de la Map
-
+        bonusImages = new HashMap<>();
         try {
             // Charger l'image pour EXTRA_BOMB
             bonusImages.put(PowerUp.Type.EXTRA_BOMB,
@@ -122,14 +150,16 @@ public class GameView {
             // Charger l'image pour BIGGER_EXPLOSION
             bonusImages.put(PowerUp.Type.BIGGER_EXPLOSION,
                     new Image(getClass().getResourceAsStream(texture.getPath() + "bonnusPlusGrand.png")));
-
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement des images de bonus: " + e.getMessage());
         }
     }
 
-
-
+    /**
+     * Affiche le jeu sur le canevas.
+     *
+     * @param game L'état actuel du jeu à afficher.
+     */
     public void render(Game game) {
         clearCanvas();
 
@@ -154,10 +184,16 @@ public class GameView {
         drawPlayers(game.getPlayers());
     }
 
+    /**
+     * Efface le canevas.
+     */
     private void clearCanvas() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
+    /**
+     * Dessine l'arrière-plan du plateau de jeu.
+     */
     private void drawBackground() {
         gc.setFill(Color.DARKGREEN);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -174,6 +210,11 @@ public class GameView {
         }
     }
 
+    /**
+     * Dessine les murs sur le plateau de jeu.
+     *
+     * @param board Le plateau de jeu contenant les murs.
+     */
     private void drawWalls(GameBoard board) {
         for (int x = 0; x < GameConstants.BOARD_WIDTH; x++) {
             for (int y = 0; y < GameConstants.BOARD_HEIGHT; y++) {
@@ -188,7 +229,7 @@ public class GameView {
                                 GameConstants.CELL_SIZE,
                                 GameConstants.CELL_SIZE);
                     } else {
-                        // Fallback : rectangles colorés
+                        // Solution de repli : rectangles colorés
                         if (wall.isDestructible()) {
                             gc.setFill(Color.BROWN);
                         } else {
@@ -208,6 +249,11 @@ public class GameView {
         }
     }
 
+    /**
+     * Dessine les bonus sur le plateau de jeu.
+     *
+     * @param board Le plateau de jeu contenant les bonus.
+     */
     private void drawPowerUps(GameBoard board) {
         for (PowerUp powerUp : board.getPowerUps()) {
             Position pos = powerUp.getPosition();
@@ -221,7 +267,7 @@ public class GameView {
                 // Dessiner l'image du bonus
                 gc.drawImage(bonusImage, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
             } else {
-                // Fallback : dessiner avec des couleurs (code existant)
+                // Solution de repli : dessiner avec des couleurs
                 switch (powerUp.getType()) {
                     case EXTRA_BOMB:
                         gc.setFill(Color.ORANGE);
@@ -245,6 +291,11 @@ public class GameView {
         }
     }
 
+    /**
+     * Dessine les bombes sur le plateau de jeu.
+     *
+     * @param board Le plateau de jeu contenant les bombes.
+     */
     private void drawBombs(GameBoard board) {
         for (Bomb bomb : board.getBombs()) {
             Position pos = bomb.getPosition();
@@ -259,7 +310,7 @@ public class GameView {
                 if (this.bomb != null && !this.bomb.isError()) {
                     gc.drawImage(this.bomb, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
                 } else {
-                    // Fallback
+                    // Solution de repli
                     gc.setFill(Color.BLACK);
                     gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
 
@@ -273,6 +324,11 @@ public class GameView {
         }
     }
 
+    /**
+     * Dessine les explosions sur le plateau de jeu.
+     *
+     * @param board Le plateau de jeu contenant les explosions.
+     */
     private void drawExplosions(GameBoard board) {
         for (Explosion explosion : board.getExplosions()) {
             Map<Position, Explosion.ExplosionType> explosionTypes = explosion.getAllExplosionTypes();
@@ -284,13 +340,12 @@ public class GameView {
                 int x = pos.getX() * GameConstants.CELL_SIZE;
                 int y = pos.getY() * GameConstants.CELL_SIZE;
 
-
                 Image explosionImage = explosionImages.get(type);
 
                 if (explosionImage != null && !explosionImage.isError()) {
                     gc.drawImage(explosionImage, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
                 } else {
-                    // Fallback avec couleurs différentes selon le type
+                    // Solution de repli avec couleurs différentes selon le type
                     switch (type) {
                         case CENTER:
                             gc.setFill(Color.WHITE);
@@ -316,7 +371,12 @@ public class GameView {
         }
     }
 
-    private void drawPlayers(java.util.List<Player> players) {
+    /**
+     * Dessine les joueurs sur le plateau de jeu.
+     *
+     * @param players La liste des joueurs à dessiner.
+     */
+    private void drawPlayers(List<Player> players) {
         for (Player player : players) {
             if (!player.isAlive()) continue;
 
@@ -327,15 +387,11 @@ public class GameView {
             // Corps du joueur
             Image PlayerImages = PlayerImage.get(player.getId());
             if (PlayerImages != null && !PlayerImages.isError()) {
-                gc.drawImage(PlayerImages, x + 3, y + 3, GameConstants.CELL_SIZE - 6, GameConstants.CELL_SIZE -6 );
+                gc.drawImage(PlayerImages, x + 3, y + 3, GameConstants.CELL_SIZE - 6, GameConstants.CELL_SIZE - 6);
             } else {
                 gc.setFill(Color.web(player.getColor()));
-                gc.fillRect(x+3, y+3, GameConstants.CELL_SIZE-6 , GameConstants.CELL_SIZE-6);
+                gc.fillRect(x + 3, y + 3, GameConstants.CELL_SIZE - 6, GameConstants.CELL_SIZE - 6);
             }
-
-            // Numéro du joueur
-            gc.setFill(Color.WHITE);
-            gc.setFont(javafx.scene.text.Font.font(14));
         }
     }
 }

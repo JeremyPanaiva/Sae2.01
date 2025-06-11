@@ -11,20 +11,37 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Contrôleur pour le menu principal du jeu Bomberman.
+ * Gère les actions des boutons du menu principal.
+ */
 public class MainMenuController {
-    @FXML
-    private Button Quit;
-    @FXML
-    private Button Play;
-    @FXML
-    private Button Avatar;
 
     @FXML
-    private void Quitter (ActionEvent event) {
+    private Button Quit; // Bouton pour quitter le jeu
+
+    @FXML
+    private Button Play; // Bouton pour commencer à jouer
+
+    @FXML
+    private Button Avatar; // Bouton pour accéder à la sélection d'avatar
+
+    /**
+     * Ferme l'application lorsque le bouton Quitter est actionné.
+     *
+     * @param event L'événement déclenché par l'action sur le bouton Quitter.
+     */
+    @FXML
+    private void Quitter(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Charge la scène de sélection des joueurs lorsque le bouton Jouer est actionné.
+     *
+     * @param event L'événement déclenché par l'action sur le bouton Jouer.
+     */
     @FXML
     private void handlePlay(ActionEvent event) {
         try {
@@ -38,7 +55,7 @@ public class MainMenuController {
             stage.setResizable(false);
             stage.show();
 
-            // Focus sur la scene pour les événements clavier
+            // Focus sur la scène pour les événements clavier
             scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();
@@ -46,6 +63,11 @@ public class MainMenuController {
         }
     }
 
+    /**
+     * Charge la scène de sélection d'avatar lorsque le bouton Avatar est actionné.
+     *
+     * @param event L'événement déclenché par l'action sur le bouton Avatar.
+     */
     @FXML
     private void handleAvatar(ActionEvent event) {
         try {
@@ -59,7 +81,7 @@ public class MainMenuController {
             stage.setResizable(false);
             stage.show();
 
-            // Focus sur la scene pour les événements clavier
+            // Focus sur la scène pour les événements clavier
             scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();

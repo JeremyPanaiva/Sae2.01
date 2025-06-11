@@ -13,22 +13,35 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Contrôleur pour la sélection du nombre de joueurs dans le jeu Bomberman.
+ * Gère les actions des boutons et la sélection du nombre de joueurs.
+ */
 public class PlayerSelectionController {
-    @FXML
-    private RadioButton onePlayerRadio;
-    @FXML
-    private RadioButton twoPlayersRadio;
-    @FXML
-    private RadioButton threePlayersRadio;
-    @FXML
-    private RadioButton fourPlayersRadio;
-    @FXML
-    private Button startGameButton;
-    @FXML
-    private Button backButton;
 
-    private ToggleGroup playerCountGroup;
+    @FXML
+    private RadioButton onePlayerRadio; // Bouton radio pour un joueur
 
+    @FXML
+    private RadioButton twoPlayersRadio; // Bouton radio pour deux joueurs
+
+    @FXML
+    private RadioButton threePlayersRadio; // Bouton radio pour trois joueurs
+
+    @FXML
+    private RadioButton fourPlayersRadio; // Bouton radio pour quatre joueurs
+
+    @FXML
+    private Button startGameButton; // Bouton pour démarrer le jeu
+
+    @FXML
+    private Button backButton; // Bouton pour revenir au menu principal
+
+    private ToggleGroup playerCountGroup; // Groupe de boutons radio pour la sélection du nombre de joueurs
+
+    /**
+     * Initialise le contrôleur et configure le groupe de boutons radio.
+     */
     @FXML
     private void initialize() {
         playerCountGroup = new ToggleGroup();
@@ -41,6 +54,12 @@ public class PlayerSelectionController {
         twoPlayersRadio.setSelected(true);
     }
 
+    /**
+     * Gère l'action du bouton pour démarrer le jeu.
+     * Charge la scène de jeu avec le nombre de joueurs humains sélectionné.
+     *
+     * @param event L'événement déclenché par l'action sur le bouton démarrer.
+     */
     @FXML
     private void handleStartGame(ActionEvent event) {
         int humanPlayers = getSelectedPlayerCount();
@@ -61,7 +80,7 @@ public class PlayerSelectionController {
                 stage.setResizable(false);
                 stage.show();
 
-                // Focus sur la scene pour les événements clavier
+                // Focus sur la scène pour les événements clavier
                 scene.getRoot().requestFocus();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -69,6 +88,11 @@ public class PlayerSelectionController {
         }
     }
 
+    /**
+     * Gère l'action du bouton pour revenir au menu principal.
+     *
+     * @param event L'événement déclenché par l'action sur le bouton retour.
+     */
     @FXML
     private void handleBack(ActionEvent event) {
         try {
@@ -82,18 +106,23 @@ public class PlayerSelectionController {
             stage.setResizable(false);
             stage.show();
 
-            // Focus sur la scene pour les événements clavier
+            // Focus sur la scène pour les événements clavier
             scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Récupère le nombre de joueurs sélectionnés.
+     *
+     * @return Le nombre de joueurs humains sélectionnés.
+     */
     private int getSelectedPlayerCount() {
         if (onePlayerRadio.isSelected()) return 1;
         if (twoPlayersRadio.isSelected()) return 2;
         if (threePlayersRadio.isSelected()) return 3;
         if (fourPlayersRadio.isSelected()) return 4;
-        return 2; // Défaut
+        return 2; // Valeur par défaut
     }
 }
