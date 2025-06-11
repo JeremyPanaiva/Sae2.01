@@ -14,12 +14,12 @@
 }
 
 .btn{
-    -fx-background-color: rgba(255, 255, 255, 0.46);
+    -fx-background-color: rgba(255, 255, 255, 0.68);
     -fx-background-radius: 50;
 }
 
 .btn:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-color: rgba(255, 255, 255, 0.94);
 }
 
 

@@ -67,3 +67,14 @@
 .speudo{
     -fx-pref-width: 200;
 }
+
+.reset{
+    -fx-background-image: url("../image/poubelle.png");
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
+    -fx-background-color: rgba(255, 255, 255, 0);
+}
+
+.reset:hover{
+    -fx-background-color: rgba(255, 255, 255, 0.44);
+}

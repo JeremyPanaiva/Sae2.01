@@ -75,6 +75,9 @@ public class AvatarController implements Initializable {
     private Button sauvegarderTexture;
 
     @FXML
+    private Button reset;
+
+    @FXML
     private Button choisirImage;
     private Stage stage;
 
@@ -335,4 +338,59 @@ public class AvatarController implements Initializable {
         //charger pack de texture
         loadTexturePack();
     }
+
+    @FXML
+    public void resetdefaut(){
+        //reset text
+        speudo1.setText("");
+        speudo2.setText("");
+        speudo3.setText("");
+        speudo4.setText("");
+
+        //reset compteur
+        nbMatch1.setText("");
+        nbMatch2.setText("");
+        nbMatch3.setText("");
+        nbMatch4.setText("");
+
+        nbMatchGagner1.setText("");
+        nbMatchGagner2.setText("");
+        nbMatchGagner3.setText("");
+        nbMatchGagner4.setText("");
+
+        //reset image
+        loadImage(avatarImageView1, IMAGE_PATH_KEY1, DEFAULT_IMAGE_1);
+        loadImage(avatarImageView2, IMAGE_PATH_KEY2, DEFAULT_IMAGE_2);
+        loadImage(avatarImageView3, IMAGE_PATH_KEY3, DEFAULT_IMAGE_3);
+        loadImage(avatarImageView4, IMAGE_PATH_KEY4, DEFAULT_IMAGE_4);
+
+        reserPref();
+    }
+
+    private void reserPref(){
+        Preferences Prefs = Preferences.userRoot().node(this.getClass().getName());
+        Prefs.remove(PSEUDO_KEY_1);
+        Prefs.remove(PSEUDO_KEY_2);
+        Prefs.remove(PSEUDO_KEY_3);
+        Prefs.remove(PSEUDO_KEY_4);
+
+        Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        matchPrefs.putInt(TOTAL_MATCH_KEY1, 0);
+        matchPrefs.putInt(TOTAL_MATCH_KEY2, 0);
+        matchPrefs.putInt(TOTAL_MATCH_KEY3, 0);
+        matchPrefs.putInt(TOTAL_MATCH_KEY4, 0);
+
+        Preferences matchGagnerPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY1, 0);
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY2, 0);
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY3, 0);
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY4, 0);
+
+        Preferences ImagePref = Preferences.userRoot().node(AvatarController.class.getName());
+        ImagePref.remove(IMAGE_PATH_KEY1);
+        ImagePref.remove(IMAGE_PATH_KEY2);
+        ImagePref.remove(IMAGE_PATH_KEY3);
+        ImagePref.remove(IMAGE_PATH_KEY4);
+    }
+
 }
