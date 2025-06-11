@@ -78,9 +78,8 @@ public class AvatarController implements Initializable {
     private Button choisirImage;
     private Stage stage;
 
-    public  List<Texture> textures;
+    public List<Texture> textures;
     private GameView gameView;
-
 
     //créer les clef pour les pref utilisateur
     private static final String PSEUDO_KEY_1 = "pseudo1";
@@ -93,9 +92,9 @@ public class AvatarController implements Initializable {
     public static final String TOTAL_MATCH_KEY3 = "nbMatch3";
     public static final String TOTAL_MATCH_KEY4 = "nbMatch4";
     public static final String TOTAL_MATCH_GAGNER_KEY1 = "nbMatchGagner1";
-    public static final String TOTAL_MATCH_GAGNER_KEY2 = "nbMatchGager2";
-    public static final String TOTAL_MATCH_GAGNER_KEY3 = "nbMatchGager3";
-    public static final String TOTAL_MATCH_GAGNER_KEY4 = "nbMatchGager4";
+    public static final String TOTAL_MATCH_GAGNER_KEY2 = "nbMatchGagner2";
+    public static final String TOTAL_MATCH_GAGNER_KEY3 = "nbMatchGagner3";
+    public static final String TOTAL_MATCH_GAGNER_KEY4 = "nbMatchGagner4";
 
     private static final String IMAGE_PATH_KEY1 = "imageChoisi1";
     private static final String IMAGE_PATH_KEY2 = "imageChoisi2";
@@ -116,6 +115,10 @@ public class AvatarController implements Initializable {
     //charge le jeu une fois appyer sur le bouton close
     private void closeButtonAction(ActionEvent event) {
         try {
+            // Sauvegarder avant de quitter
+            savePseudos();
+            sauvegarderTexturePack();
+
             //chager le FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
             Parent root = loader.load();
@@ -145,12 +148,11 @@ public class AvatarController implements Initializable {
         prefs.put(PSEUDO_KEY_2, speudo2.getText());
         prefs.put(PSEUDO_KEY_3, speudo3.getText());
         prefs.put(PSEUDO_KEY_4, speudo4.getText());
-
     }
 
     //incrémenter le nombre de match total
     public static void incrementTotalMatch(String key) {
-        Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getSimpleName());
+        Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getName());
         int total = matchPrefs.getInt(key, 0);
         matchPrefs.putInt(key, total + 1);
     }
@@ -196,7 +198,6 @@ public class AvatarController implements Initializable {
         selectImageForPlayer(avatarImageView4, IMAGE_PATH_KEY4);
     }
 
-
     //permet de selectionner une image pour un joueur
     private void selectImageForPlayer(ImageView imageView, String key) {
         FileChooser fileChooser = new FileChooser();
@@ -205,36 +206,53 @@ public class AvatarController implements Initializable {
 
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
-            Image image = new Image(file.toURI().toString());
-            imageView.setImage(image);
+            try {
+                Image image = new Image(file.toURI().toString());
+                if (!image.isError()) {
+                    imageView.setImage(image);
+                    // Sauvegarder le chemin seulement si l'image se charge correctement
+                    Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
+                    ImagePref.put(key, file.getAbsolutePath());
+                } else {
+                    System.err.println("Erreur: Image corrompue ou format non supporté");
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur lors du chargement de l'image: " + e.getMessage());
+            }
         }
-
-        Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
-        ImagePref.put(key, file.getAbsolutePath());
     }
 
-    //permet de charger soir l'image selectionner soit l'image par défaut
+    //permet de charger soit l'image selectionner soit l'image par défaut
     private void loadImage(ImageView imageView, String key, String defaultImage) {
         Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
         String imagePath = ImagePref.get(key, null);
+
+        // Essayer de charger l'image personnalisée
         if (imagePath != null) {
             try {
-            File imageFile = new File(imagePath);
-            if (imageFile.exists()) {
-                Image image = new Image(imageFile.toURI().toString());
-                imageView.setImage(image);
-                return;
-            }
+                File imageFile = new File(imagePath);
+                if (imageFile.exists()) {
+                    Image image = new Image(imageFile.toURI().toString());
+                    if (!image.isError()) {
+                        imageView.setImage(image);
+                        return;
+                    }
+                }
             } catch (Exception e) {
-                System.err.println("erreur charger une image");
+                System.err.println("Erreur lors du chargement de l'image personnalisée: " + e.getMessage());
             }
         }
 
-        try{
+        // Charger l'image par défaut si l'image personnalisée échoue
+        try {
             Image defaultImages = new Image(getClass().getResourceAsStream(defaultImage));
-            imageView.setImage(defaultImages);
+            if (!defaultImages.isError()) {
+                imageView.setImage(defaultImages);
+            } else {
+                System.err.println("Erreur: Image par défaut non trouvée: " + defaultImage);
+            }
         } catch (Exception e) {
-            System.err.println("erreur charger une image");
+            System.err.println("Erreur lors du chargement de l'image par défaut: " + e.getMessage());
         }
     }
 
@@ -243,16 +261,25 @@ public class AvatarController implements Initializable {
         textures = new ArrayList<>();
         textures.add(new Texture("defaut", "/image/defaut/"));
         textures.add(new Texture("mario", "/image/mario/"));
+        // Ajoutez d'autres packs de texture ici si nécessaire
+
         texturePackComboBox.setItems(FXCollections.observableArrayList(textures));
 
+        // Charger la texture sauvegardée
         Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());
         String textureName = TexturePref.get(TEXTURE_PACK_KEY, "defaut");
 
-        for(Texture texture : textures) {
-            if(texture.getNom().equals(textureName)) {
+        // Sélectionner la texture correspondante
+        for (Texture texture : textures) {
+            if (texture.getNom().equals(textureName)) {
                 texturePackComboBox.getSelectionModel().select(texture);
                 break;
             }
+        }
+
+        // Si aucune texture trouvée, sélectionner la première (défaut)
+        if (texturePackComboBox.getSelectionModel().getSelectedItem() == null) {
+            texturePackComboBox.getSelectionModel().selectFirst();
         }
     }
 
@@ -260,54 +287,52 @@ public class AvatarController implements Initializable {
     //sauvegarde le pack de texture pour le charger plus tard
     private void sauvegarderTexturePack() {
         Texture selectedTexture = texturePackComboBox.getSelectionModel().getSelectedItem();
-        if(selectedTexture != null) {
+        if (selectedTexture != null) {
             Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());
             TexturePref.put(TEXTURE_PACK_KEY, selectedTexture.getNom());
+            System.out.println("Pack de texture sauvegardé: " + selectedTexture.getNom());
         }
     }
 
-
-    //méthode d'initilisation charger automatiquement
+    //méthode d'initilisation chargée automatiquement
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         //speudo
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
-        speudo1.setText(prefs.get(PSEUDO_KEY_1, ""));
-        speudo2.setText(prefs.get(PSEUDO_KEY_2, ""));
-        speudo3.setText(prefs.get(PSEUDO_KEY_3, ""));
-        speudo4.setText(prefs.get(PSEUDO_KEY_4, ""));
+        speudo1.setText(prefs.get(PSEUDO_KEY_1, "Joueur 1"));
+        speudo2.setText(prefs.get(PSEUDO_KEY_2, "Joueur 2"));
+        speudo3.setText(prefs.get(PSEUDO_KEY_3, "Joueur 3"));
+        speudo4.setText(prefs.get(PSEUDO_KEY_4, "Joueur 4"));
 
-        //competeur match total
-        Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getSimpleName());
+        //compteur match total
+        Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getName());
         int total = matchPrefs.getInt(TOTAL_MATCH_KEY1, 0);
         int total2 = matchPrefs.getInt(TOTAL_MATCH_KEY2, 0);
         int total3 = matchPrefs.getInt(TOTAL_MATCH_KEY3, 0);
         int total4 = matchPrefs.getInt(TOTAL_MATCH_KEY4, 0);
-        nbMatch1.setText(String.valueOf("nombre matchs total : " + total));
-        nbMatch2.setText(String.valueOf("nombre matchs total : " + total2));
-        nbMatch3.setText(String.valueOf("nombre matchs total : " + total3));
-        nbMatch4.setText(String.valueOf("nombre matchs total : " + total4));
+        nbMatch1.setText("Nombre matchs total : " + total);
+        nbMatch2.setText("Nombre matchs total : " + total2);
+        nbMatch3.setText("Nombre matchs total : " + total3);
+        nbMatch4.setText("Nombre matchs total : " + total4);
 
-        //compteur match gagner
+        //compteur match gagné
         Preferences matchGagnerPrefs = Preferences.userRoot().node(AvatarController.class.getName());
         int WinsPlayer = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY1, 0);
         int WinsPlayer2 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY2, 0);
         int WinsPlayer3 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY3, 0);
         int Winsplayer4 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY4, 0);
-        nbMatchGagner1.setText(String.valueOf("nombre matchs gagné : " + WinsPlayer));
-        nbMatchGagner2.setText(String.valueOf("nombre matchs gagné : " + WinsPlayer2));
-        nbMatchGagner3.setText(String.valueOf("nombre matchs gagné : " + WinsPlayer3));
-        nbMatchGagner4.setText(String.valueOf("nombre matchs gagné : " + Winsplayer4));
+        nbMatchGagner1.setText("Nombre matchs gagné : " + WinsPlayer);
+        nbMatchGagner2.setText("Nombre matchs gagné : " + WinsPlayer2);
+        nbMatchGagner3.setText("Nombre matchs gagné : " + WinsPlayer3);
+        nbMatchGagner4.setText("Nombre matchs gagné : " + Winsplayer4);
 
-
-        //charger image
+        //charger images
         loadImage(avatarImageView1, IMAGE_PATH_KEY1, DEFAULT_IMAGE_1);
         loadImage(avatarImageView2, IMAGE_PATH_KEY2, DEFAULT_IMAGE_2);
         loadImage(avatarImageView3, IMAGE_PATH_KEY3, DEFAULT_IMAGE_3);
         loadImage(avatarImageView4, IMAGE_PATH_KEY4, DEFAULT_IMAGE_4);
 
-        //changer de Texture
+        //charger pack de texture
         loadTexturePack();
-
     }
 }

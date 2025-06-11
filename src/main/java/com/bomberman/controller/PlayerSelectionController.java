@@ -53,7 +53,7 @@ public class PlayerSelectionController {
                 GameController gameController = loader.getController();
                 gameController.setHumanPlayerCount(humanPlayers);
 
-                Scene scene = new Scene(root, 800, 600);
+                Scene scene = new Scene(root, 850, 650);
                 scene.getStylesheets().add(getClass().getResource("/css/game.css").toExternalForm());
 
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
