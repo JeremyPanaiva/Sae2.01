@@ -42,6 +42,7 @@ public class MainMenuController {
             scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();
+            System.err.println("Erreur lors du chargement de la sélection de joueurs: " + e.getMessage());
         }
     }
 
