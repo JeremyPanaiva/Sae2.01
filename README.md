@@ -2,6 +2,10 @@
 
 Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture MVC claire.
 
+## Javadocs
+
+https://jeremypanaiva.github.io/Sae2.01/bomberman/module-summary.html
+
 ## 🎮 Contrôles
 
 ### Joueur 1 (Rouge)
