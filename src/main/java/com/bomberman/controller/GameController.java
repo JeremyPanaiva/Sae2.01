@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -24,10 +25,6 @@ import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-/**
- * Classe contrôleur pour le jeu Bomberman.
- * Gère les entrées utilisateur, la boucle de jeu et les mises à jour de l'état du jeu.
- */
 public class GameController implements Initializable {
 
     @FXML private VBox root;
@@ -41,10 +38,7 @@ public class GameController implements Initializable {
     private Set<KeyCode> processedKeys;
     private int humanPlayerCount = 2; // Valeur par défaut
 
-    /**
-     * Contrôles pour chaque joueur.
-     * Chaque joueur a un tableau de KeyCodes pour haut, bas, gauche, droite et placement de bombe.
-     */
+    // Contrôles des joueurs
     private static final KeyCode[][] PLAYER_CONTROLS = {
             {KeyCode.Z, KeyCode.S, KeyCode.Q, KeyCode.D, KeyCode.A}, // Joueur 1: ZQSD + A pour bombe
             {KeyCode.UP, KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT, KeyCode.ENTER}, // Joueur 2: Flèches + Entrée
@@ -52,11 +46,6 @@ public class GameController implements Initializable {
             {KeyCode.NUMPAD8, KeyCode.NUMPAD5, KeyCode.NUMPAD4, KeyCode.NUMPAD6, KeyCode.NUMPAD0} // Joueur 4: Pavé numérique
     };
 
-    /**
-     * Initialise le contrôleur.
-     * @param location L'emplacement utilisé pour résoudre les chemins relatifs pour l'objet racine.
-     * @param resources Les ressources utilisées pour localiser l'objet racine.
-     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         pressedKeys = new HashSet<>();
@@ -64,22 +53,15 @@ public class GameController implements Initializable {
 
         // Initialiser le jeu avec le nombre de joueurs humains par défaut
         setHumanPlayerCount(humanPlayerCount);
-        System.out.println("GameController initialisé");
+        System.out.println("GameController initialized");
     }
 
-    /**
-     * Définit le nombre de joueurs humains dans le jeu.
-     * @param humanPlayers Le nombre de joueurs humains.
-     */
     public void setHumanPlayerCount(int humanPlayers) {
         this.humanPlayerCount = humanPlayers;
-        System.out.println("Définir le nombre de joueurs humains à : " + humanPlayers);
+        System.out.println("Setting human player count to: " + humanPlayers);
         initializeGame();
     }
 
-    /**
-     * Initialise le jeu avec le nombre spécifié de joueurs.
-     */
     private void initializeGame() {
         // Créer le jeu avec 4 joueurs au total, dont humanPlayerCount joueurs humains
         game = new Game(4, humanPlayerCount);
@@ -90,21 +72,18 @@ public class GameController implements Initializable {
 
         root.requestFocus();
 
-        System.out.println("Jeu initialisé avec " + humanPlayerCount + " joueurs humains");
+        System.out.println("Game initialized with " + humanPlayerCount + " human players");
         // Debug: afficher les types de joueurs
         for (int i = 0; i < game.getPlayers().size(); i++) {
             Player player = game.getPlayer(i);
             if (player != null) {
-                System.out.println("Joueur " + i + ": " + (player instanceof BotPlayer ? "Bot" : "Humain"));
+                System.out.println("Player " + i + ": " + (player instanceof BotPlayer ? "Bot" : "Human"));
             } else {
-                System.out.println("Joueur " + i + ": null");
+                System.out.println("Player " + i + ": null");
             }
         }
     }
 
-    /**
-     * Initialise la boucle de jeu.
-     */
     private void initializeGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastUpdate = 0;
@@ -124,23 +103,16 @@ public class GameController implements Initializable {
         gameLoop.start();
     }
 
-    /**
-     * Configure les gestionnaires d'événements de touches.
-     */
     private void setupKeyHandlers() {
         root.setOnKeyPressed(this::onKeyPressed);
         root.setOnKeyReleased(this::onKeyReleased);
         root.setFocusTraversable(true);
     }
 
-    /**
-     * Gère les événements d'appui sur les touches.
-     * @param event L'événement de touche.
-     */
     private void onKeyPressed(KeyEvent event) {
         KeyCode key = event.getCode();
 
-        // Si la touche n'était pas déjà pressée, on l'ajoute aux deux ensembles
+        // Si la touche n'était pas déjà pressée, on l'ajoute aux deux sets
         if (!pressedKeys.contains(key)) {
             pressedKeys.add(key);
             processedKeys.add(key);
@@ -156,19 +128,12 @@ public class GameController implements Initializable {
         }
     }
 
-    /**
-     * Gère les événements de relâchement des touches.
-     * @param event L'événement de touche.
-     */
     private void onKeyReleased(KeyEvent event) {
         KeyCode key = event.getCode();
         pressedKeys.remove(key);
         processedKeys.remove(key);
     }
 
-    /**
-     * Gère les entrées du joueur pour le mouvement et le placement de bombe.
-     */
     private void handleInput() {
         if (!game.isGameRunning()) return;
 
@@ -178,7 +143,7 @@ public class GameController implements Initializable {
 
             // Vérifier que ce joueur existe et n'est pas un bot
             if (player == null || player instanceof BotPlayer) {
-                System.out.println("Ignorer le joueur " + playerId + " - est un bot ou null");
+                System.out.println("Skipping player " + playerId + " - is bot or null");
                 continue;
             }
 
@@ -210,9 +175,6 @@ public class GameController implements Initializable {
         }
     }
 
-    /**
-     * Gère les mouvements et les placements de bombes des bots.
-     */
     private void handleBots() {
         if (!game.isGameRunning()) return;
 
@@ -230,9 +192,6 @@ public class GameController implements Initializable {
         }
     }
 
-    /**
-     * Met à jour le texte de statut en fonction de l'état du jeu.
-     */
     private void updateStatus() {
         if (!game.isGameRunning()) {
             if (game.getWinner() != null) {
@@ -242,8 +201,13 @@ public class GameController implements Initializable {
             } else {
                 statusText.setText("Égalité ! Appuyez sur R pour rejouer.");
             }
+            // Style pour le texte de victoire
+            statusText.setStyle("-fx-font-size: 35px; -fx-fill: gold; -fx-font-weight: bold;");
+            // Centrer le texte
+            StackPane.setAlignment(statusText, javafx.geometry.Pos.CENTER);
         } else {
-            // Compter les joueurs vivants en fonction de leur type réel
+            // Réinitialiser le style pour le texte normal
+            statusText.setStyle("-fx-font-size: 12px; -fx-fill: white;");
             long humanAlive = 0;
             long botsAlive = 0;
 
@@ -263,9 +227,6 @@ public class GameController implements Initializable {
         }
     }
 
-    /**
-     * Retourne au menu principal.
-     */
     private void returnToMainMenu() {
         if (gameLoop != null) {
             gameLoop.stop(); // Arrêter la boucle de jeu
@@ -281,10 +242,12 @@ public class GameController implements Initializable {
             stage.setScene(scene);
             stage.setResizable(false);
 
-            // Focus sur la scène pour les événements clavier
+            // Focus sur la scene pour les événements clavier
             scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 }
+
+
