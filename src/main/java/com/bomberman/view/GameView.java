@@ -45,9 +45,9 @@ public class GameView {
         if ("defaut".equals(textureName)) {
             this.texture = new Texture("defaut", "/image/defaut/");
             System.out.println("Using default texture pack");
-        } else if ("fnaf".equals(textureName)) {
-            this.texture = new Texture("fnaf", "/image/fnaf/");
-            System.out.println("Using fnaf texture pack");
+        } else if ("mario".equals(textureName)) {
+            this.texture = new Texture("mario", "/image/mario/");
+            System.out.println("Using mario texture pack");
         } else {
             this.texture = new Texture("defaut", "/image/defaut/");
             System.out.println("Unknown texture, falling back to default: " + textureName);
