@@ -29,7 +29,8 @@ public class Game {
         gameRunning = true;
         winner = null;
 
-
+        initializePlayers(totalPlayers, humanPlayers);
+        
         // Incrémenter les compteurs de matchs
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY1);
         com.bomberman.controller.AvatarController.incrementTotalMatch(AvatarController.TOTAL_MATCH_KEY2);

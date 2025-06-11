@@ -22,6 +22,7 @@ public class GameView {
     private Image wallDestructible;
     private Image bomb;
     private Map<Explosion.ExplosionType, Image> explosionImages;
+    private Map<PowerUp.Type, Image> bonusImages;
     private Texture texture;
 
     public GameView(Canvas canvas) {
@@ -62,6 +63,7 @@ public class GameView {
         loadWallImage();
         loadbombImage();
         loadExplosionImages();
+        loadBonus();
     }
 
     private void loadPlayerImage() {
@@ -108,6 +110,25 @@ public class GameView {
             System.err.println("Erreur lors du chargement des images d'explosion: " + e.getMessage());
         }
     }
+
+    private void loadBonus() {
+        bonusImages = new HashMap<>(); // Initialisation de la Map
+
+        try {
+            // Charger l'image pour EXTRA_BOMB
+            bonusImages.put(PowerUp.Type.EXTRA_BOMB,
+                    new Image(getClass().getResourceAsStream(texture.getPath() + "bonusFois2.png")));
+
+            // Charger l'image pour BIGGER_EXPLOSION
+            bonusImages.put(PowerUp.Type.BIGGER_EXPLOSION,
+                    new Image(getClass().getResourceAsStream(texture.getPath() + "bonnusPlusGrand.png")));
+
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des images de bonus: " + e.getMessage());
+        }
+    }
+
+
 
     public void render(Game game) {
         clearCanvas();
@@ -193,26 +214,34 @@ public class GameView {
             int x = pos.getX() * GameConstants.CELL_SIZE;
             int y = pos.getY() * GameConstants.CELL_SIZE;
 
-            // Couleur selon le type de power-up
-            switch (powerUp.getType()) {
-                case EXTRA_BOMB:
-                    gc.setFill(Color.ORANGE);
-                    break;
-                case BIGGER_EXPLOSION:
-                    gc.setFill(Color.RED);
-                    break;
+            // Essayer d'utiliser l'image correspondante
+            Image bonusImage = bonusImages.get(powerUp.getType());
+
+            if (bonusImage != null && !bonusImage.isError()) {
+                // Dessiner l'image du bonus
+                gc.drawImage(bonusImage, x, y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+            } else {
+                // Fallback : dessiner avec des couleurs (code existant)
+                switch (powerUp.getType()) {
+                    case EXTRA_BOMB:
+                        gc.setFill(Color.ORANGE);
+                        break;
+                    case BIGGER_EXPLOSION:
+                        gc.setFill(Color.RED);
+                        break;
+                }
+
+                gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
+
+                // Symbole
+                gc.setFill(Color.WHITE);
+                gc.setFont(javafx.scene.text.Font.font(16));
+                String symbol = switch (powerUp.getType()) {
+                    case EXTRA_BOMB -> "B";
+                    case BIGGER_EXPLOSION -> "E";
+                };
+                gc.fillText(symbol, x + GameConstants.CELL_SIZE / 2 - 5, y + GameConstants.CELL_SIZE / 2 + 5);
             }
-
-            gc.fillOval(x + 5, y + 5, GameConstants.CELL_SIZE - 10, GameConstants.CELL_SIZE - 10);
-
-            // Symbole
-            gc.setFill(Color.WHITE);
-            gc.setFont(javafx.scene.text.Font.font(16));
-            String symbol = switch (powerUp.getType()) {
-                case EXTRA_BOMB -> "B";
-                case BIGGER_EXPLOSION -> "E";
-            };
-            gc.fillText(symbol, x + GameConstants.CELL_SIZE/2 - 5, y + GameConstants.CELL_SIZE/2 + 5);
         }
     }
 

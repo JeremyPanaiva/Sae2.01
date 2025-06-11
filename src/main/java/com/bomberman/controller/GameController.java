@@ -50,7 +50,9 @@ public class GameController implements Initializable {
         pressedKeys = new HashSet<>();
         processedKeys = new HashSet<>();
 
-        // Le jeu sera inizialisé quand setHumanPlayerCount sera appelé
+        // Initialiser le jeu avec le nombre de joueurs humains par défaut
+        setHumanPlayerCount(humanPlayerCount);
+        System.out.println("GameController initialized");
     }
 
     public void setHumanPlayerCount(int humanPlayers) {
@@ -75,8 +77,10 @@ public class GameController implements Initializable {
             Player player = game.getPlayer(i);
             if (player != null) {
                 System.out.println("Player " + i + ": " + (player instanceof BotPlayer ? "Bot" : "Human"));
+            } else {
+                System.out.println("Player " + i + ": null");
             }
-        }
+            }
     }
 
     private void initializeGameLoop() {
