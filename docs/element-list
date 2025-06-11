@@ -1,0 +1,6 @@
+module:bomberman
+com.bomberman
+com.bomberman.controller
+com.bomberman.model
+com.bomberman.util
+com.bomberman.view

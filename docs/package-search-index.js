@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"bomberman","l":"com.bomberman"},{"m":"bomberman","l":"com.bomberman.controller"},{"m":"bomberman","l":"com.bomberman.model"},{"m":"bomberman","l":"com.bomberman.util"},{"m":"bomberman","l":"com.bomberman.view"}];updateSearchResults();
