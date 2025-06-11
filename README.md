@@ -6,13 +6,20 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 
 https://jeremypanaiva.github.io/Sae2.01/bomberman/module-summary.html
 
-#### Commande pour generé la javadoc
+## Fonctionnalités
 
-javadoc -d docs \
--sourcepath src/main/java \
---module-path "$HOME/Bureau/javafx-sdk-24.0.1/lib" \
---add-modules javafx.controls,javafx.fxml \
--subpackages com.bomberman
+- Multijoueur local (jusqu'à 4 joueurs)
+- Bombes avec timer et explosions
+- Murs destructibles avec power-ups
+- Détection de collision
+- Système de victoire
+- Redémarrage de partie
+- Interface graphique avec animations
+- Séparation claire MVC
+- IA bot jouable intégrée pour un ou plusieurs joueurs
+- Changement Thème Mario
+- Menu principal avec sélection du nombre de joueurs
+- Sauvegarde des scores
 
 
 ## 🎮 Contrôles
@@ -49,8 +56,8 @@ javadoc -d docs \
 
 ## Power-ups
 
-- **B (Orange)** : Bombe supplémentaire
-- **E (Rouge)** : Portée d'explosion augmentée
+- **Double Bombes** : Bombe supplémentaire
+- **Bombe Nucelaire** : Portée d'explosion augmentée
 
 
 ## 🏗Architecture du projet
@@ -63,6 +70,7 @@ javadoc -d docs \
 - `Explosion.java` : Gestion des explosions
 - `Wall.java` : Murs du jeu
 - `PowerUp.java` : Bonus collectables
+- `Bot.java`: IA contrôlant un joueur automatique
 
 ### Vue (View)
 - `GameView.java` : Rendu graphique du jeu
@@ -93,43 +101,40 @@ javadoc -d docs \
 
 3. **Arborescence** :
 ```bash
-src/
-├── main/
-│   ├── java/
-│   │   └── com/
-│   │       └── bomberman/
-│   │           ├── BombermanApplication.java
-│   │           ├── controller/
-│   │           │   └── GameController.java
-│   │           ├── model/
-│   │           │   ├── Game.java
-│   │           │   ├── Player.java
-│   │           │   ├── Bomb.java
-│   │           │   ├── Explosion.java
-│   │           │   ├── Wall.java
-│   │           │   ├── PowerUp.java
-│   │           │   └── GameBoard.java
-│   │           ├── view/
-│   │           │   └── GameView.java
-│   │           └── util/
-│   │               ├── Direction.java
-│   │               ├── GameConstants.java
-│   │               └── Position.java
-│   └── resources/
-│       ├── fxml/
-│       │   └── game.fxml
-│       ├── css/
-│       │   └── game.css
-│       └── images/
-│           ├── player1.png
-│           ├── player2.png
-│           ├── player3.png
-│           ├── player4.png
-│           ├── bomb.png
-│           ├── explosion.png
-│           ├── wall.png
-│           ├── destructible_wall.png
-│           └── powerup.png
+.idea
+├───.mvn
+│   └───wrapper
+├───docs
+│   ├───bomberman
+│   │   └───com
+│   │       └───bomberman
+│   │           ├───controller
+│   │           ├───model
+│   │           ├───util
+│   │           └───view
+│   ├───legal
+│   ├───resource-files
+│   └───script-files
+└───src
+    ├───main
+    │   ├───java
+    │   │   └───com
+    │   │       └───bomberman
+    │   │           ├───controller
+    │   │           ├───model
+    │   │           ├───util
+    │   │           └───view
+    │   └───resources
+    │       ├───css
+    │       ├───fxml
+    │       └───image
+    │           ├───defaut
+    │           └───mario
+    └───test
+        └───java
+            └───com
+                └───bomberman
+                    └───model
 
  ```
 
@@ -141,22 +146,18 @@ src/
 ### Exécution
 Lancer la classe `BombermanApplication.main()`
 
-## Fonctionnalités
-
-- Multijoueur local (jusqu'à 4 joueurs)
-- Bombes avec timer et explosions
-- Murs destructibles avec power-ups
-- Détection de collision
-- Système de victoire
-- Redémarrage de partie
-- Interface graphique avec animations
-- Séparation claire MVC
-
 ## Améliorations possibles
 
 - Ajout d'effets sonores
-- Menu principal avec sélection du nombre de joueurs
 - Niveaux avec différents layouts
-- IA pour joueurs ordinateur
-- Sauvegarde des scores
 - Effets visuels avancés
+
+  #### Commande pour generé la javadoc
+
+```bash
+javadoc -d docs \
+-sourcepath src/main/java \
+--module-path "$HOME/Bureau/javafx-sdk-24.0.1/lib" \
+--add-modules javafx.controls,javafx.fxml \
+-subpackages com.bomberman
+```
