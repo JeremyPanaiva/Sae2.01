@@ -6,7 +6,7 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 
 https://jeremypanaiva.github.io/Sae2.01/bomberman/module-summary.html
 
-#### Commande 
+#### Commande pour generé la javadoc
 
 javadoc -d docs \
 -sourcepath src/main/java \
