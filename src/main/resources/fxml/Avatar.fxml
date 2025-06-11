@@ -14,6 +14,12 @@
         </cursor>
     </Button>
 
+    <Button onAction="#resetdefaut" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="300.0" styleClass="reset">
+        <cursor>
+            <Cursor fx:constant="HAND" />
+        </cursor>
+    </Button>
+
     <!-- Selectionner le ressource pack  -->
     <ComboBox fx:id="texturePackComboBox" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="40">
       <cursor>
