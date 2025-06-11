@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -200,8 +201,13 @@ public class GameController implements Initializable {
             } else {
                 statusText.setText("Égalité ! Appuyez sur R pour rejouer.");
             }
+            // Style pour le texte de victoire
+            statusText.setStyle("-fx-font-size: 35px; -fx-fill: gold; -fx-font-weight: bold;");
+            // Centrer le texte
+            StackPane.setAlignment(statusText, javafx.geometry.Pos.CENTER);
         } else {
-            // Compter les joueurs vivants en fonction de leur type réel
+            // Réinitialiser le style pour le texte normal
+            statusText.setStyle("-fx-font-size: 12px; -fx-fill: white;");
             long humanAlive = 0;
             long botsAlive = 0;
 
@@ -219,7 +225,7 @@ public class GameController implements Initializable {
             statusText.setText("Joueurs en vie: " + humanAlive + " | Bots en vie: " + botsAlive +
                     " | Contrôles: J1(ZQSD+A) J2(Flèches+Entrée) J3(IJKL+U) J4(Pavé+0)");
         }
-    }
+            }
 
     private void returnToMainMenu() {
         if (gameLoop != null) {

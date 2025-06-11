@@ -18,6 +18,7 @@
 
         <!-- Zone de jeu -->
         <Canvas fx:id="gameCanvas" styleClass="game-canvas" />
+
         <Text fx:id="statusText" styleClass="status-text" text="Joueurs en vie: 4 | Contrôles: J1(ZQSD+A) J2(Flèches+Entrée) J3(IJKL+U) J4(Pavé+0)" wrappingWidth="700.0">
             <font>
                 <Font size="12.0" />
