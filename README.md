@@ -6,6 +6,15 @@ Un jeu Bomberman multijoueur local développé en JavaFX avec une architecture M
 
 https://jeremypanaiva.github.io/Sae2.01/bomberman/module-summary.html
 
+####Commande 
+
+javadoc -d docs \
+-sourcepath src/main/java \
+--module-path "$HOME/Bureau/javafx-sdk-24.0.1/lib" \
+--add-modules javafx.controls,javafx.fxml \
+-subpackages com.bomberman
+
+
 ## 🎮 Contrôles
 
 ### Joueur 1 (Rouge)
