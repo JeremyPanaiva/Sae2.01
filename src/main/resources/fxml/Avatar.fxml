@@ -14,7 +14,7 @@
         </cursor>
     </Button>
 
-    <Button onAction="#resetdefaut" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="300.0" styleClass="reset">
+    <Button onAction="#resetDefaults" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="300.0" styleClass="reset">
         <cursor>
             <Cursor fx:constant="HAND" />
         </cursor>

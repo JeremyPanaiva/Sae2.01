@@ -309,16 +309,21 @@ public class GameController implements Initializable {
      */
     private void returnToMainMenu() {
         if (gameLoop != null) {
-            gameLoop.stop();
+            gameLoop.stop(); // Arrêter la boucle de jeu
         }
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bomberman/view/MainMenu.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) this.root.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Menu Principal - Bomberman");
-            stage.show();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
+            Parent rootParent = loader.load();
+            Scene scene = new Scene(rootParent, 800, 600);
+            scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
+
+            Stage stage = (Stage) root.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setResizable(false);
+
+            // Focus sur la scene pour les événements clavier
+            scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();
         }

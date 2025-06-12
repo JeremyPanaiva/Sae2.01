@@ -32,6 +32,7 @@ import java.util.prefs.Preferences;
  * Permet la gestion des images d'avatars personnalisées, des pseudos,
  * des compteurs de matchs joués et gagnés, ainsi que la sélection d'un pack de textures.
  */
+
 public class AvatarController implements Initializable {
     /** TextField pour le pseudo du joueur 1 */
     @FXML
@@ -85,6 +86,7 @@ public class AvatarController implements Initializable {
     @FXML
     private ImageView avatarImageView4;
 
+
     /** ComboBox pour la sélection du pack de textures */
     @FXML
     private ComboBox<Texture> texturePackComboBox;
@@ -99,13 +101,11 @@ public class AvatarController implements Initializable {
     /** Bouton pour choisir une image d'avatar personnalisée */
     @FXML
     private Button choisirImage;
-
     /** Stage de la fenêtre courante */
     private Stage stage;
 
     /** Liste des packs de textures disponibles */
     public List<Texture> textures;
-
     /** Vue du jeu (non utilisée dans ce contrôleur) */
     private GameView gameView;
 
@@ -120,7 +120,6 @@ public class AvatarController implements Initializable {
     public static final String TOTAL_MATCH_KEY2 = "nbMatch2";
     public static final String TOTAL_MATCH_KEY3 = "nbMatch3";
     public static final String TOTAL_MATCH_KEY4 = "nbMatch4";
-
     // Clés pour le nombre de matchs gagnés
     public static final String TOTAL_MATCH_GAGNER_KEY1 = "nbMatchGagner1";
     public static final String TOTAL_MATCH_GAGNER_KEY2 = "nbMatchGagner2";
@@ -159,18 +158,21 @@ public class AvatarController implements Initializable {
             savePseudos();
             sauvegarderTexturePack();
 
-            // Charger le FXML du menu principal
+            //chager le FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
             Parent root = loader.load();
+            //défini la taille de la fenêtre et la créer
             Scene scene = new Scene(root, 800, 600);
+            //charge le css
             scene.getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
 
+            //définit la nouvelle scene
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
             stage.setResizable(false);
             stage.show();
 
-            // Focus sur la scène pour les événements clavier
+            // Focus sur la scene pour les événements clavier
             scene.getRoot().requestFocus();
         } catch (IOException e) {
             e.printStackTrace();
@@ -208,6 +210,7 @@ public class AvatarController implements Initializable {
      */
     public static void incrementNbMatchGagner(int playerNumber) {
         Preferences matchGagnerPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        //rajoute +1 en fonction de l'ID
         String key = switch (playerNumber) {
             case 0 -> TOTAL_MATCH_GAGNER_KEY1;
             case 1 -> TOTAL_MATCH_GAGNER_KEY2;
@@ -260,20 +263,26 @@ public class AvatarController implements Initializable {
      * @param imageView L'ImageView à mettre à jour.
      * @param preferenceKey La clé de préférence pour enregistrer le chemin de l'image.
      */
-    private void selectImageForPlayer(ImageView imageView, String preferenceKey) {
+    private void selectImageForPlayer(ImageView imageView, String key) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choisir une image d'avatar");
-        FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter(
-                "Images (*.jpg, *.png, *.jpeg)", "*.jpg", "*.png", "*.jpeg");
-        fileChooser.getExtensionFilters().add(imageFilter);
+        fileChooser.setTitle("choisir une image");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.png"));
 
-        File selectedFile = fileChooser.showOpenDialog(stage);
-        if (selectedFile != null) {
-            Image image = new Image(selectedFile.toURI().toString());
-            imageView.setImage(image);
-
-            Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
-            prefs.put(preferenceKey, selectedFile.toURI().toString());
+        File file = fileChooser.showOpenDialog(stage);
+        if (file != null) {
+            try {
+                Image image = new Image(file.toURI().toString());
+                if (!image.isError()) {
+                    imageView.setImage(image);
+                    // Sauvegarder le chemin seulement si l'image se charge correctement
+                    Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
+                    ImagePref.put(key, file.getAbsolutePath());
+                } else {
+                    System.err.println("Erreur: Image corrompue ou format non supporté");
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur lors du chargement de l'image: " + e.getMessage());
+            }
         }
     }
 
@@ -284,149 +293,171 @@ public class AvatarController implements Initializable {
      * @param location  L'emplacement utilisé pour résoudre les chemins relatifs, ou null si inconnu.
      * @param resources Les ressources utilisées pour localiser les chaînes de caractères, ou null si indisponible.
      */
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
+    private void loadImage(ImageView imageView, String key, String defaultImage) {
+        Preferences ImagePref = Preferences.userRoot().node(this.getClass().getName());
+        String imagePath = ImagePref.get(key, null);
 
-        // Charger les pseudos sauvegardés
-        speudo1.setText(prefs.get(PSEUDO_KEY_1, ""));
-        speudo2.setText(prefs.get(PSEUDO_KEY_2, ""));
-        speudo3.setText(prefs.get(PSEUDO_KEY_3, ""));
-        speudo4.setText(prefs.get(PSEUDO_KEY_4, ""));
+        // Essayer de charger l'image personnalisée
+        if (imagePath != null) {
+            try {
+                File imageFile = new File(imagePath);
+                if (imageFile.exists()) {
+                    Image image = new Image(imageFile.toURI().toString());
+                    if (!image.isError()) {
+                        imageView.setImage(image);
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur lors du chargement de l'image personnalisée: " + e.getMessage());
+            }
+        }
 
-        // Initialiser la liste des textures disponibles
+        // Charger l'image par défaut si l'image personnalisée échoue
+        try {
+            Image defaultImages = new Image(getClass().getResourceAsStream(defaultImage));
+            if (!defaultImages.isError()) {
+                imageView.setImage(defaultImages);
+            } else {
+                System.err.println("Erreur: Image par défaut non trouvée: " + defaultImage);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image par défaut: " + e.getMessage());
+        }
+    }
+
+
+    private void loadTexturePack() {
         textures = new ArrayList<>();
-        textures.add(new Texture("Classic", "/image/textures1/"));
-        textures.add(new Texture("Retro", "/image/textures2/"));
-        textures.add(new Texture("Dark", "/image/textures3/"));
-        textures.add(new Texture("Space", "/image/textures4/"));
-        textures.add(new Texture("Mario", "/image/textures5/"));
+        textures.add(new Texture("defaut", "/image/defaut/"));
+        textures.add(new Texture("mario", "/image/mario/"));
+        // Ajoutez d'autres packs de texture ici si nécessaire
 
-        // Remplir la ComboBox avec la liste des textures
         texturePackComboBox.setItems(FXCollections.observableArrayList(textures));
 
-        // Récupérer la texture sélectionnée précédemment, ou la texture par défaut
-        String savedTexturePackName = prefs.get(TEXTURE_PACK_KEY, "Classic");
-        Texture savedTexture = textures.stream()
-                .filter(t -> t.getNom().equals(savedTexturePackName))
-                .findFirst()
-                .orElse(textures.get(0));
+        // Charger la texture sauvegardée
+        Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());
+        String textureName = TexturePref.get(TEXTURE_PACK_KEY, "defaut");
 
-        texturePackComboBox.setValue(savedTexture);
-
-        // Charger les images des avatars depuis les préférences ou images par défaut
-        loadAvatarImage(avatarImageView1, prefs, IMAGE_PATH_KEY1, DEFAULT_IMAGE_1);
-        loadAvatarImage(avatarImageView2, prefs, IMAGE_PATH_KEY2, DEFAULT_IMAGE_2);
-        loadAvatarImage(avatarImageView3, prefs, IMAGE_PATH_KEY3, DEFAULT_IMAGE_3);
-        loadAvatarImage(avatarImageView4, prefs, IMAGE_PATH_KEY4, DEFAULT_IMAGE_4);
-
-        // Initialiser les compteurs de matchs joués et gagnés
-        updateMatchCounters(prefs);
-
-        // Bouton reset : remet les pseudos, images et compteurs par défaut
-        reset.setOnAction(e -> {
-            resetDefaults(prefs);
-        });
-
-        // Bouton sauvegarder pack texture
-        sauvegarderTexture.setOnAction(e -> sauvegarderTexturePack());
-    }
-
-    /**
-     * Charge une image d'avatar depuis les préférences ou charge une image par défaut.
-     *
-     * @param imageView L'ImageView à mettre à jour.
-     * @param prefs Les préférences utilisateur.
-     * @param preferenceKey La clé pour récupérer le chemin de l'image sauvegardée.
-     * @param defaultImagePath Le chemin de l'image par défaut à utiliser si aucune sauvegarde.
-     */
-    private void loadAvatarImage(ImageView imageView, Preferences prefs, String preferenceKey, String defaultImagePath) {
-        String imagePath = prefs.get(preferenceKey, null);
-        Image image;
-
-        if (imagePath != null) {
-            image = new Image(imagePath);
-        } else {
-            image = new Image(getClass().getResourceAsStream(defaultImagePath));
+        // Sélectionner la texture correspondante
+        for (Texture texture : textures) {
+            if (texture.getNom().equals(textureName)) {
+                texturePackComboBox.getSelectionModel().select(texture);
+                break;
+            }
         }
-        imageView.setImage(image);
+
+        // Si aucune texture trouvée, sélectionner la première (défaut)
+        if (texturePackComboBox.getSelectionModel().getSelectedItem() == null) {
+            texturePackComboBox.getSelectionModel().selectFirst();
+        }
     }
 
-    /**
-     * Met à jour les labels des compteurs de matchs joués et gagnés à partir des préférences.
-     *
-     * @param prefs Les préférences utilisateur.
-     */
-    private void updateMatchCounters(Preferences prefs) {
-        nbMatch1.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_KEY1, 0)));
-        nbMatch2.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_KEY2, 0)));
-        nbMatch3.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_KEY3, 0)));
-        nbMatch4.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_KEY4, 0)));
 
-        nbMatchGagner1.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_GAGNER_KEY1, 0)));
-        nbMatchGagner2.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_GAGNER_KEY2, 0)));
-        nbMatchGagner3.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_GAGNER_KEY3, 0)));
-        nbMatchGagner4.setText(String.valueOf(prefs.getInt(TOTAL_MATCH_GAGNER_KEY4, 0)));
+    @FXML
+    private void sauvegarderTexturePack() {
+        Texture selectedTexture = texturePackComboBox.getSelectionModel().getSelectedItem();
+        if (selectedTexture != null) {
+            Preferences TexturePref = Preferences.userRoot().node(this.getClass().getName());
+            TexturePref.put(TEXTURE_PACK_KEY, selectedTexture.getNom());
+            System.out.println("Pack de texture sauvegardé: " + selectedTexture.getNom());
+        }
     }
 
-    /**
-     * Réinitialise les pseudos, images, compteurs et pack de textures aux valeurs par défaut.
-     *
-     * @param prefs Les préférences utilisateur.
-     */
-    private void resetDefaults(Preferences prefs) {
+    //méthode d'initilisation chargée automatiquement
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        //speudo
+        Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
+        speudo1.setText(prefs.get(PSEUDO_KEY_1, "Joueur 1"));
+        speudo2.setText(prefs.get(PSEUDO_KEY_2, "Joueur 2"));
+        speudo3.setText(prefs.get(PSEUDO_KEY_3, "Joueur 3"));
+        speudo4.setText(prefs.get(PSEUDO_KEY_4, "Joueur 4"));
+
+        //compteur match total
+        Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        int total = matchPrefs.getInt(TOTAL_MATCH_KEY1, 0);
+        int total2 = matchPrefs.getInt(TOTAL_MATCH_KEY2, 0);
+        int total3 = matchPrefs.getInt(TOTAL_MATCH_KEY3, 0);
+        int total4 = matchPrefs.getInt(TOTAL_MATCH_KEY4, 0);
+        nbMatch1.setText("Nombre matchs total : " + total);
+        nbMatch2.setText("Nombre matchs total : " + total2);
+        nbMatch3.setText("Nombre matchs total : " + total3);
+        nbMatch4.setText("Nombre matchs total : " + total4);
+
+        //compteur match gagné
+        Preferences matchGagnerPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        int WinsPlayer = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY1, 0);
+        int WinsPlayer2 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY2, 0);
+        int WinsPlayer3 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY3, 0);
+        int Winsplayer4 = matchGagnerPrefs.getInt(TOTAL_MATCH_GAGNER_KEY4, 0);
+        nbMatchGagner1.setText("Nombre matchs gagné : " + WinsPlayer);
+        nbMatchGagner2.setText("Nombre matchs gagné : " + WinsPlayer2);
+        nbMatchGagner3.setText("Nombre matchs gagné : " + WinsPlayer3);
+        nbMatchGagner4.setText("Nombre matchs gagné : " + Winsplayer4);
+
+        //charger images
+        loadImage(avatarImageView1, IMAGE_PATH_KEY1, DEFAULT_IMAGE_1);
+        loadImage(avatarImageView2, IMAGE_PATH_KEY2, DEFAULT_IMAGE_2);
+        loadImage(avatarImageView3, IMAGE_PATH_KEY3, DEFAULT_IMAGE_3);
+        loadImage(avatarImageView4, IMAGE_PATH_KEY4, DEFAULT_IMAGE_4);
+
+        //charger pack de texture
+        loadTexturePack();
+    }
+
+    @FXML
+    public void resetDefaults(){
+        //reset text
         speudo1.setText("");
         speudo2.setText("");
         speudo3.setText("");
         speudo4.setText("");
 
-        nbMatch1.setText("0");
-        nbMatch2.setText("0");
-        nbMatch3.setText("0");
-        nbMatch4.setText("0");
+        //reset compteur
+        nbMatch1.setText("");
+        nbMatch2.setText("");
+        nbMatch3.setText("");
+        nbMatch4.setText("");
 
-        nbMatchGagner1.setText("0");
-        nbMatchGagner2.setText("0");
-        nbMatchGagner3.setText("0");
-        nbMatchGagner4.setText("0");
+        nbMatchGagner1.setText("");
+        nbMatchGagner2.setText("");
+        nbMatchGagner3.setText("");
+        nbMatchGagner4.setText("");
 
-        prefs.remove(PSEUDO_KEY_1);
-        prefs.remove(PSEUDO_KEY_2);
-        prefs.remove(PSEUDO_KEY_3);
-        prefs.remove(PSEUDO_KEY_4);
+        //reset image
+        loadImage(avatarImageView1, IMAGE_PATH_KEY1, DEFAULT_IMAGE_1);
+        loadImage(avatarImageView2, IMAGE_PATH_KEY2, DEFAULT_IMAGE_2);
+        loadImage(avatarImageView3, IMAGE_PATH_KEY3, DEFAULT_IMAGE_3);
+        loadImage(avatarImageView4, IMAGE_PATH_KEY4, DEFAULT_IMAGE_4);
 
-        prefs.remove(TOTAL_MATCH_KEY1);
-        prefs.remove(TOTAL_MATCH_KEY2);
-        prefs.remove(TOTAL_MATCH_KEY3);
-        prefs.remove(TOTAL_MATCH_KEY4);
-
-        prefs.remove(TOTAL_MATCH_GAGNER_KEY1);
-        prefs.remove(TOTAL_MATCH_GAGNER_KEY2);
-        prefs.remove(TOTAL_MATCH_GAGNER_KEY3);
-        prefs.remove(TOTAL_MATCH_GAGNER_KEY4);
-
-        prefs.remove(IMAGE_PATH_KEY1);
-        prefs.remove(IMAGE_PATH_KEY2);
-        prefs.remove(IMAGE_PATH_KEY3);
-        prefs.remove(IMAGE_PATH_KEY4);
-
-        prefs.put(TEXTURE_PACK_KEY, "Classic");
-        texturePackComboBox.setValue(textures.get(0));
-
-        loadAvatarImage(avatarImageView1, prefs, IMAGE_PATH_KEY1, DEFAULT_IMAGE_1);
-        loadAvatarImage(avatarImageView2, prefs, IMAGE_PATH_KEY2, DEFAULT_IMAGE_2);
-        loadAvatarImage(avatarImageView3, prefs, IMAGE_PATH_KEY3, DEFAULT_IMAGE_3);
-        loadAvatarImage(avatarImageView4, prefs, IMAGE_PATH_KEY4, DEFAULT_IMAGE_4);
+        reserPref();
     }
 
-    /**
-     * Sauvegarde le pack de textures sélectionné dans les préférences utilisateur.
-     */
-    private void sauvegarderTexturePack() {
-        Texture selectedTexture = texturePackComboBox.getValue();
-        if (selectedTexture != null) {
-            Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
-            prefs.put(TEXTURE_PACK_KEY, selectedTexture.getNom());
-        }
+    private void reserPref(){
+        Preferences Prefs = Preferences.userRoot().node(this.getClass().getName());
+        Prefs.remove(PSEUDO_KEY_1);
+        Prefs.remove(PSEUDO_KEY_2);
+        Prefs.remove(PSEUDO_KEY_3);
+        Prefs.remove(PSEUDO_KEY_4);
+
+        Preferences matchPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        matchPrefs.putInt(TOTAL_MATCH_KEY1, 0);
+        matchPrefs.putInt(TOTAL_MATCH_KEY2, 0);
+        matchPrefs.putInt(TOTAL_MATCH_KEY3, 0);
+        matchPrefs.putInt(TOTAL_MATCH_KEY4, 0);
+
+        Preferences matchGagnerPrefs = Preferences.userRoot().node(AvatarController.class.getName());
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY1, 0);
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY2, 0);
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY3, 0);
+        matchGagnerPrefs.putInt(TOTAL_MATCH_GAGNER_KEY4, 0);
+
+        Preferences ImagePref = Preferences.userRoot().node(AvatarController.class.getName());
+        ImagePref.remove(IMAGE_PATH_KEY1);
+        ImagePref.remove(IMAGE_PATH_KEY2);
+        ImagePref.remove(IMAGE_PATH_KEY3);
+        ImagePref.remove(IMAGE_PATH_KEY4);
     }
+
 }
